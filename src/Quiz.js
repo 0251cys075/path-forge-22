@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 
 const skills = [
-  { id: 1, icon: '💻', title: 'Frontend Development', desc: 'HTML, CSS, React, UI Design', color: '#FF6B35' },
+  { id: 1, icon: '💻', title: 'Frontend Development', desc: 'HTML, CSS, React, UI Design', color: '#0A66C2' },
   { id: 2, icon: '⚙️', title: 'Backend Development', desc: 'Node.js, Python, Databases', color: '#4ECDC4' },
   { id: 3, icon: '🤖', title: 'Artificial Intelligence', desc: 'ML, Deep Learning, NLP', color: '#9B59B6' },
   { id: 4, icon: '📊', title: 'Data Science', desc: 'Data Analysis, Visualization, SQL', color: '#3498DB' },
-  { id: 5, icon: '📱', title: 'Mobile Development', desc: 'React Native, Flutter, Android', color: '#2ECC71' },
-  { id: 6, icon: '🔐', title: 'Cyber Security', desc: 'Ethical Hacking, Network Security', color: '#E74C3C' },
-  { id: 7, icon: '☁️', title: 'Cloud Computing', desc: 'AWS, Azure, DevOps', color: '#F39C12' },
+  { id: 5, icon: '📱', title: 'Mobile Development', desc: 'React Native, Flutter, Android', color: '#057642' },
+  { id: 6, icon: '🔐', title: 'Cyber Security', desc: 'Ethical Hacking, Network Security', color: '#CC1016' },
+  { id: 7, icon: '☁️', title: 'Cloud Computing', desc: 'AWS, Azure, DevOps', color: '#F5C518' },
   { id: 8, icon: '🎨', title: 'UI/UX Design', desc: 'Figma, Wireframing, User Research', color: '#E91E63' },
 ];
 
@@ -25,7 +25,9 @@ const goals = [
   { id: 'higher', label: '🎓 Higher Studies', desc: 'MS, MBA or research abroad' },
 ];
 
-export default function Quiz({ onComplete }) {
+const defaultTheme = { pageBg:'#1D2226', cardBg:'#1B1F23', inputBg:'#283039', border:'#38434F', textPrimary:'#E7E9EA', textMuted:'#B0B7BF', accent:'#0A66C2', accentHover:'#004182', accentLight:'#70B5F9', success:'#057642', warning:'#F5C518', error:'#CC1016' };
+
+export default function Quiz({ onComplete, theme = defaultTheme }) {
   const [step, setStep] = useState(1);
   const [selectedSkill, setSelectedSkill] = useState(null);
   const [selectedExp, setSelectedExp] = useState(null);
@@ -36,16 +38,16 @@ export default function Quiz({ onComplete }) {
 
   const containerStyle = {
     minHeight: '100vh',
-    background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)',
-    color: 'white',
+    background: theme.pageBg,
+    color: theme.textPrimary,
     fontFamily: 'Arial, sans-serif',
     padding: '40px 20px',
     overflowY: 'auto'
   };
 
   const nextBtn = {
-    background: 'linear-gradient(135deg, #FF6B35, #FF9A6C)',
-    color: 'white',
+    background: `linear-gradient(135deg, ${theme.accent}, #FF9A6C)`,
+    color: '#FFFFFF',
     border: 'none',
     padding: '16px 48px',
     borderRadius: '16px',
@@ -55,14 +57,14 @@ export default function Quiz({ onComplete }) {
     marginTop: '40px',
     display: 'block',
     margin: '40px auto 0',
-    boxShadow: '0 8px 25px rgba(255,107,53,0.3)',
+    boxShadow: `0 8px 25px ${theme.accent}4D`,
     transition: 'transform 0.2s, box-shadow 0.2s',
   };
 
   const backBtn = {
-    background: 'rgba(255,255,255,0.05)',
-    color: 'rgba(255,255,255,0.5)',
-    border: '1px solid rgba(255,255,255,0.1)',
+    background: theme.inputBg,
+    color: theme.textMuted,
+    border: `1px solid ${theme.border}`,
     padding: '12px 30px',
     borderRadius: '14px',
     fontSize: '14px',
@@ -77,8 +79,8 @@ export default function Quiz({ onComplete }) {
   const cardStyle = {
     maxWidth: '920px',
     margin: '0 auto',
-    background: 'rgba(255,255,255,0.03)',
-    border: '1px solid rgba(255,255,255,0.08)',
+    background: theme.cardBg,
+    border: `1px solid ${theme.border}`,
     borderRadius: '24px',
     padding: '40px',
     backdropFilter: 'blur(20px)',
@@ -92,8 +94,8 @@ export default function Quiz({ onComplete }) {
     <div style={containerStyle}>
       <style>{`
         @keyframes fieldFocus {
-          0% { border-color: rgba(255,255,255,0.2); box-shadow: none; }
-          100% { border-color: rgba(255,107,53,0.5); box-shadow: 0 0 15px rgba(255,107,53,0.2); }
+          0% { border-color: ${theme.border}; box-shadow: none; }
+          100% { border-color: ${theme.accent}80; box-shadow: 0 0 15px ${theme.accent}33; }
         }
         input:focus {
           animation: fieldFocus 0.3s ease forwards;
@@ -103,14 +105,14 @@ export default function Quiz({ onComplete }) {
       {/* Header */}
       <div style={{ textAlign: 'center', marginBottom: '40px' }}>
         <h1 className="pf-shimmer-text" style={{ fontSize: '32px', fontWeight: '900', fontFamily: 'var(--font-display)', letterSpacing: '-0.5px' }}>⚡ PathForge</h1>
-        <p style={{ color: 'rgba(255,255,255,0.4)', marginTop: '8px', fontSize: '15px' }}>Precision skill mapping for high-impact careers</p>
+        <p style={{ color: theme.textMuted, marginTop: '8px', fontSize: '15px' }}>Precision skill mapping for high-impact careers</p>
         <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap', marginTop: '20px' }}>
           {[
             '⏱️ ~2 min',
             '🤖 AI Roadmap',
             '📊 Merit Score',
           ].map((badge, i) => (
-            <span key={i} style={{ fontSize: '11px', color: '#FF6B35', background: 'rgba(255,107,53,0.1)', border: '1px solid rgba(255,107,53,0.25)', borderRadius: '20px', padding: '6px 14px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            <span key={i} style={{ fontSize: '11px', color: theme.accent, background: theme.accent + '1A', border: `1px solid ${theme.accent}40`, borderRadius: '20px', padding: '6px 14px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
               {badge}
             </span>
           ))}
@@ -122,7 +124,7 @@ export default function Quiz({ onComplete }) {
         <div style={{ marginBottom: '40px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', padding: '0 4px' }}>
             {stepLabels.map((label, i) => (
-              <span key={i} style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px', color: i + 1 <= step ? '#FF6B35' : 'rgba(255,255,255,0.2)', transition: 'color 0.3s' }}>
+              <span key={i} style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px', color: i + 1 <= step ? theme.accent : theme.textMuted, transition: 'color 0.3s' }}>
                 {label}
               </span>
             ))}
@@ -133,8 +135,8 @@ export default function Quiz({ onComplete }) {
                 height: '4px',
                 flex: 1,
                 borderRadius: '2px',
-                background: s <= step ? 'linear-gradient(90deg, #FF6B35, #FF9A6C)' : 'rgba(255,255,255,0.1)',
-                boxShadow: s <= step ? '0 0 10px rgba(255,107,53,0.3)' : 'none',
+                background: s <= step ? `linear-gradient(90deg, ${theme.accent}, ${theme.accentLight})` : theme.border,
+                boxShadow: s <= step ? `0 0 10px ${theme.accent}4D` : 'none',
                 transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
               }} />
             ))}
@@ -142,16 +144,16 @@ export default function Quiz({ onComplete }) {
         </div>
 
         {/* Summary Bar */}
-        <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '18px', padding: '16px 20px', marginBottom: '40px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px' }}>
+        <div style={{ background: theme.cardBg, border: `1px solid ${theme.border}`, borderRadius: '18px', padding: '16px 20px', marginBottom: '40px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px' }}>
           {[
             { label: 'Name', value: name || '-', icon: '👤' },
             { label: 'Location', value: city || '-', icon: '📍' },
             { label: 'Domain', value: selectedSkill?.title || '-', icon: '🎯' },
             { label: 'Objective', value: selectedGoal?.label?.split(' ').slice(1).join(' ') || '-', icon: '🚀' },
           ].map((item, i) => (
-            <div key={i} style={{ borderRight: i < 3 ? '1px solid rgba(255,255,255,0.05)' : 'none', paddingRight: '10px' }}>
-              <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', marginBottom: '4px', fontWeight: '800', textTransform: 'uppercase' }}>{item.label}</div>
-              <div style={{ fontSize: '13px', color: item.value !== '-' ? 'white' : 'rgba(255,255,255,0.2)', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div key={i} style={{ borderRight: i < 3 ? `1px solid ${theme.border}` : 'none', paddingRight: '10px' }}>
+              <div style={{ fontSize: '10px', color: theme.textMuted, marginBottom: '4px', fontWeight: '800', textTransform: 'uppercase' }}>{item.label}</div>
+              <div style={{ fontSize: '13px', color: item.value !== '-' ? theme.textPrimary : theme.textMuted, fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span style={{ opacity: item.value !== '-' ? 1 : 0.3 }}>{item.icon}</span> {item.value}
               </div>
             </div>
@@ -164,12 +166,12 @@ export default function Quiz({ onComplete }) {
             <h2 style={{ fontSize: '28px', fontWeight: 'bold', textAlign: 'center', marginBottom: '10px' }}>
               Welcome! Let's get to know you 👋
             </h2>
-            <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.5)', marginBottom: '35px' }}>
+            <p style={{ textAlign: 'center', color: theme.textMuted, marginBottom: '35px' }}>
               This helps us personalise your experience
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '400px', margin: '0 auto' }}>
               <div>
-                <label style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', display: 'block', marginBottom: '8px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Your Name</label>
+                <label style={{ fontSize: '13px', color: theme.textMuted, display: 'block', marginBottom: '8px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Your Name</label>
                 <input
                   type="text"
                   placeholder="e.g. Mohd Zaid Khan"
@@ -179,21 +181,21 @@ export default function Quiz({ onComplete }) {
                     width: '100%',
                     padding: '16px 20px',
                     borderRadius: '15px',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    background: 'rgba(255,255,255,0.04)',
-                    color: 'white',
+                    border: `1px solid ${theme.border}`,
+                    background: theme.inputBg,
+                    color: theme.textPrimary,
                     fontSize: '16px',
                     outline: 'none',
                     boxSizing: 'border-box',
                     transition: 'all 0.3s',
                     fontFamily: 'inherit'
                   }}
-                  onMouseEnter={e => e.currentTarget.style.borderColor='rgba(255,255,255,0.2)'}
-                  onMouseLeave={e => e.currentTarget.style.borderColor='rgba(255,255,255,0.1)'}
+                  onMouseEnter={e => e.currentTarget.style.borderColor=theme.border}
+                  onMouseLeave={e => e.currentTarget.style.borderColor='transparent'}
                 />
               </div>
               <div>
-                <label style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', display: 'block', marginBottom: '8px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Your City</label>
+                <label style={{ fontSize: '13px', color: theme.textMuted, display: 'block', marginBottom: '8px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Your City</label>
                 <input
                   type="text"
                   placeholder="e.g. Greater Noida"
@@ -203,24 +205,24 @@ export default function Quiz({ onComplete }) {
                     width: '100%',
                     padding: '16px 20px',
                     borderRadius: '15px',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    background: 'rgba(255,255,255,0.04)',
-                    color: 'white',
+                    border: `1px solid ${theme.border}`,
+                    background: theme.inputBg,
+                    color: theme.textPrimary,
                     fontSize: '16px',
                     outline: 'none',
                     boxSizing: 'border-box',
                     transition: 'all 0.3s',
                     fontFamily: 'inherit'
                   }}
-                  onMouseEnter={e => e.currentTarget.style.borderColor='rgba(255,255,255,0.2)'}
-                  onMouseLeave={e => e.currentTarget.style.borderColor='rgba(255,255,255,0.1)'}
+                  onMouseEnter={e => e.currentTarget.style.borderColor=theme.border}
+                  onMouseLeave={e => e.currentTarget.style.borderColor='transparent'}
                 />
               </div>
             </div>
             <button
               style={{ ...nextBtn, opacity: name && city ? 1 : 0.3, transform: name && city ? 'scale(1)' : 'scale(0.98)' }}
-              onMouseEnter={e => { if(name && city) { e.currentTarget.style.transform='scale(1.03)'; e.currentTarget.style.boxShadow='0 12px 35px rgba(255,107,53,0.45)'; } }}
-              onMouseLeave={e => { if(name && city) { e.currentTarget.style.transform='scale(1)'; e.currentTarget.style.boxShadow='0 8px 25px rgba(255,107,53,0.3)'; } }}
+              onMouseEnter={e => { if(name && city) { e.currentTarget.style.transform='scale(1.03)'; e.currentTarget.style.boxShadow=`0 12px 35px ${theme.accent}73`; } }}
+              onMouseLeave={e => { if(name && city) { e.currentTarget.style.transform='scale(1)'; e.currentTarget.style.boxShadow=`0 8px 25px ${theme.accent}4D`; } }}
               onClick={() => name && city && setStep(2)}
             >
               Continue →
@@ -234,7 +236,7 @@ export default function Quiz({ onComplete }) {
             <h2 style={{ fontSize: '28px', fontWeight: 'bold', textAlign: 'center', marginBottom: '10px' }}>
               Which skill track are you on? 🎯
             </h2>
-            <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.5)', marginBottom: '35px' }}>
+            <p style={{ textAlign: 'center', color: theme.textMuted, marginBottom: '35px' }}>
               Pick the one that excites you most
             </p>
             <div style={{
@@ -251,10 +253,10 @@ export default function Quiz({ onComplete }) {
                     borderRadius: '14px',
                     border: selectedSkill?.id === skill.id
                       ? `2px solid ${skill.color}`
-                      : '1px solid rgba(255,255,255,0.1)',
+                      : `1px solid ${theme.border}`,
                     background: selectedSkill?.id === skill.id
                       ? `${skill.color}15`
-                      : 'rgba(255,255,255,0.02)',
+                      : 'transparent',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
@@ -266,14 +268,14 @@ export default function Quiz({ onComplete }) {
                   }}
                   onMouseEnter={e => {
                     if (selectedSkill?.id !== skill.id) {
-                      e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
-                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)';
+                      e.currentTarget.style.background = theme.inputBg;
+                      e.currentTarget.style.borderColor = theme.border;
                     }
                   }}
                   onMouseLeave={e => {
                     if (selectedSkill?.id !== skill.id) {
-                      e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
-                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
+                      e.currentTarget.style.background = 'transparent';
+                      e.currentTarget.style.borderColor = 'transparent';
                     }
                   }}
                 >
@@ -281,8 +283,8 @@ export default function Quiz({ onComplete }) {
                     {skill.icon}
                   </div>
                   <div>
-                    <div style={{ fontWeight: '800', fontSize: '15px', color: selectedSkill?.id === skill.id ? 'white' : 'rgba(255,255,255,0.9)' }}>{skill.title}</div>
-                    <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px', marginTop: '4px', fontWeight: '500' }}>{skill.desc}</div>
+                    <div style={{ fontWeight: '800', fontSize: '15px', color: selectedSkill?.id === skill.id ? theme.textPrimary : theme.textMuted }}>{skill.title}</div>
+                    <div style={{ color: theme.textMuted, fontSize: '12px', marginTop: '4px', fontWeight: '500' }}>{skill.desc}</div>
                   </div>
                   {selectedSkill?.id === skill.id && <div style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', width: '20px', height: '20px', borderRadius: '50%', background: skill.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>✓</div>}
                 </div>
@@ -302,7 +304,7 @@ export default function Quiz({ onComplete }) {
             <h2 style={{ fontSize: '28px', fontWeight: 'bold', textAlign: 'center', marginBottom: '10px' }}>
               What's your current level? 📊
             </h2>
-            <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.5)', marginBottom: '35px' }}>
+            <p style={{ textAlign: 'center', color: theme.textMuted, marginBottom: '35px' }}>
               Be honest — we'll build the right path for you
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', maxWidth: '500px', margin: '0 auto' }}>
@@ -314,26 +316,26 @@ export default function Quiz({ onComplete }) {
                     padding: '18px 24px',
                     borderRadius: '14px',
                     border: selectedExp?.id === exp.id
-                      ? '2px solid #FF6B35'
-                      : '1px solid rgba(255,255,255,0.1)',
+                      ? `2px solid ${theme.accent}`
+                      : `1px solid ${theme.border}`,
                     background: selectedExp?.id === exp.id
-                      ? 'rgba(255,107,53,0.1)'
-                      : 'rgba(255,255,255,0.02)',
+                      ? theme.inputBg
+                      : theme.cardBg,
                     cursor: 'pointer',
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   }}
-                  onMouseEnter={e => { if(selectedExp?.id !== exp.id) e.currentTarget.style.background='rgba(255,255,255,0.06)'; }}
-                  onMouseLeave={e => { if(selectedExp?.id !== exp.id) e.currentTarget.style.background='rgba(255,255,255,0.02)'; }}
+                  onMouseEnter={e => { if(selectedExp?.id !== exp.id) e.currentTarget.style.background=theme.inputBg; }}
+                  onMouseLeave={e => { if(selectedExp?.id !== exp.id) e.currentTarget.style.background=theme.cardBg; }}
                 >
                   <div>
                     <div style={{ fontWeight: '800', fontSize: '16px' }}>{exp.label}</div>
-                    <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', marginTop: '4px', fontWeight: '500' }}>{exp.desc}</div>
+                    <div style={{ color: theme.textMuted, fontSize: '13px', marginTop: '4px', fontWeight: '500' }}>{exp.desc}</div>
                   </div>
-                  <div style={{ width: '24px', height: '24px', borderRadius: '50%', border: `2px solid ${selectedExp?.id === exp.id ? '#FF6B35' : 'rgba(255,255,255,0.1)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {selectedExp?.id === exp.id && <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#FF6B35' }} />}
+                  <div style={{ width: '24px', height: '24px', borderRadius: '50%', border: `2px solid ${selectedExp?.id === exp.id ? theme.accent : theme.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {selectedExp?.id === exp.id && <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: theme.accent }} />}
                   </div>
                 </div>
               ))}
@@ -352,7 +354,7 @@ export default function Quiz({ onComplete }) {
             <h2 style={{ fontSize: '28px', fontWeight: 'bold', textAlign: 'center', marginBottom: '10px' }}>
               What's your end goal? 🏆
             </h2>
-            <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.5)', marginBottom: '35px' }}>
+            <p style={{ textAlign: 'center', color: theme.textMuted, marginBottom: '35px' }}>
               This helps us tailor your entire path
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '14px', maxWidth: '580px', margin: '0 auto' }}>
@@ -364,21 +366,21 @@ export default function Quiz({ onComplete }) {
                     padding: '24px 20px',
                     borderRadius: '14px',
                     border: selectedGoal?.id === goal.id
-                      ? '2px solid #FF6B35'
-                      : '1px solid rgba(255,255,255,0.1)',
+                      ? `2px solid ${theme.accent}`
+                      : `1px solid ${theme.border}`,
                     background: selectedGoal?.id === goal.id
-                      ? 'rgba(255,107,53,0.1)'
-                      : 'rgba(255,255,255,0.02)',
+                      ? theme.inputBg
+                      : theme.cardBg,
                     cursor: 'pointer',
                     textAlign: 'center',
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   }}
-                  onMouseEnter={e => { if(selectedGoal?.id !== goal.id) e.currentTarget.style.background='rgba(255,255,255,0.06)'; }}
-                  onMouseLeave={e => { if(selectedGoal?.id !== goal.id) e.currentTarget.style.background='rgba(255,255,255,0.02)'; }}
+                  onMouseEnter={e => { if(selectedGoal?.id !== goal.id) e.currentTarget.style.background=theme.inputBg; }}
+                  onMouseLeave={e => { if(selectedGoal?.id !== goal.id) e.currentTarget.style.background=theme.cardBg; }}
                 >
                   <div style={{ fontSize: '32px', marginBottom: '12px', filter: selectedGoal?.id === goal.id ? 'none' : 'grayscale(1)' }}>{goal.label.split(' ')[0]}</div>
-                  <div style={{ fontWeight: '800', fontSize: '15px', color: selectedGoal?.id === goal.id ? 'white' : 'rgba(255,255,255,0.9)' }}>{goal.label.split(' ').slice(1).join(' ')}</div>
-                  <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px', marginTop: '6px', fontWeight: '500' }}>{goal.desc}</div>
+                  <div style={{ fontWeight: '800', fontSize: '15px', color: selectedGoal?.id === goal.id ? theme.textPrimary : theme.textMuted }}>{goal.label.split(' ').slice(1).join(' ')}</div>
+                  <div style={{ color: theme.textMuted, fontSize: '12px', marginTop: '6px', fontWeight: '500' }}>{goal.desc}</div>
                 </div>
               ))}
             </div>

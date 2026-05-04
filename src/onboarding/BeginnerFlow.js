@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 
-export default function BeginnerFlow({ onNext, onBack, trackId }) {
+const defaultTheme = { pageBg:'#1D2226', cardBg:'#1B1F23', inputBg:'#283039', border:'#38434F', textPrimary:'#E7E9EA', textMuted:'#B0B7BF', accent:'#0A66C2', accentHover:'#004182', accentLight:'#70B5F9', success:'#057642', warning:'#F5C518', error:'#CC1016' };
+
+export default function BeginnerFlow({ onNext, onBack, trackId, theme = defaultTheme }) {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState([]);
 
@@ -96,8 +98,8 @@ export default function BeginnerFlow({ onNext, onBack, trackId }) {
   };
 
   const optionStyle = {
-    background: 'rgba(255,255,255,0.03)',
-    border: '1px solid rgba(255,255,255,0.08)',
+    background: theme.cardBg,
+    border: `1px solid ${theme.border}`,
     borderRadius: '16px',
     padding: '20px',
     cursor: 'pointer',
@@ -105,21 +107,21 @@ export default function BeginnerFlow({ onNext, onBack, trackId }) {
     textAlign: 'left',
     backdropFilter: 'blur(10px)',
     fontSize: '16px',
-    color: 'rgba(255,255,255,0.8)',
+    color: theme.textPrimary,
     lineHeight: '1.5'
   };
 
   const optionHoverStyle = {
-    background: 'rgba(255,107,53,0.1)',
-    borderColor: 'rgba(255,107,53,0.3)',
+    background: theme.inputBg,
+    borderColor: theme.accent,
     transform: 'translateY(-2px)'
   };
 
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)',
-      color: 'white',
+      background: theme.pageBg,
+      color: theme.textPrimary,
       fontFamily: 'var(--font-main)',
       display: 'flex',
       flexDirection: 'column',
@@ -131,9 +133,9 @@ export default function BeginnerFlow({ onNext, onBack, trackId }) {
         <button 
           onClick={onBack}
           style={{
-            background: 'rgba(255,255,255,0.05)',
-            color: 'rgba(255,255,255,0.7)',
-            border: '1px solid rgba(255,255,255,0.1)',
+            background: theme.inputBg,
+            color: theme.textMuted,
+            border: `1px solid ${theme.border}`,
             padding: '10px 20px',
             borderRadius: '20px',
             cursor: 'pointer',
@@ -142,12 +144,12 @@ export default function BeginnerFlow({ onNext, onBack, trackId }) {
             transition: 'all 0.2s'
           }}
           onMouseEnter={e => {
-            e.currentTarget.style.color = 'white';
-            e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+            e.currentTarget.style.color = theme.textPrimary;
+            e.currentTarget.style.background = theme.cardBg;
           }}
           onMouseLeave={e => {
-            e.currentTarget.style.color = 'rgba(255,255,255,0.7)';
-            e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+            e.currentTarget.style.color = theme.textMuted;
+            e.currentTarget.style.background = theme.inputBg;
           }}
         >
           ← Back
@@ -181,7 +183,7 @@ export default function BeginnerFlow({ onNext, onBack, trackId }) {
                 width: '8px',
                 height: '8px',
                 borderRadius: '50%',
-                background: index <= currentQuestion ? '#FF6B35' : 'rgba(255,255,255,0.2)',
+                background: index <= currentQuestion ? theme.accent : theme.border,
                 transition: 'all 0.3s ease'
               }}
             />
@@ -190,7 +192,7 @@ export default function BeginnerFlow({ onNext, onBack, trackId }) {
         
         <p style={{
           fontSize: '20px',
-          color: 'rgba(255,255,255,0.8)',
+          color: theme.textMuted,
           maxWidth: '500px',
           margin: '0 auto',
           lineHeight: '1.6',

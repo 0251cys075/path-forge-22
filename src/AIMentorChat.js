@@ -1,6 +1,8 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
 
-export default function AIMentorChat({ skillName, currentModuleTitle }) {
+const defaultTheme = { pageBg:'#1D2226', cardBg:'#1B1F23', inputBg:'#283039', border:'#38434F', textPrimary:'#E7E9EA', textMuted:'#B0B7BF', accent:'#0A66C2', accentHover:'#004182', accentLight:'#70B5F9', success:'#057642', warning:'#F5C518', error:'#CC1016' };
+
+export default function AIMentorChat({ skillName, currentModuleTitle, theme = defaultTheme }) {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [messages, setMessages] = useState([
@@ -65,47 +67,49 @@ export default function AIMentorChat({ skillName, currentModuleTitle }) {
   };
 
   return (
-    <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '18px' }}>
+    <div style={{ background: theme.cardBg, border: `1px solid ${theme.border}`, borderRadius: '16px', padding: '18px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
         <span style={{ fontSize: '20px' }}>🤖</span>
         <div>
-          <div style={{ fontSize: '16px', fontWeight: 'bold' }}>AI Mentor Chat</div>
-          <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Powered by AI · Ask anything about {skillName}</div>
+          <div style={{ fontSize: '16px', fontWeight: 'bold', color: theme.textPrimary }}>AI Mentor Chat</div>
+          <div style={{ fontSize: '11px', color: theme.textMuted }}>Powered by AI · Ask anything about {skillName}</div>
         </div>
-        <div style={{ marginLeft: 'auto', width: '8px', height: '8px', borderRadius: '50%', background: '#2ECC71', boxShadow: '0 0 6px #2ECC71' }} />
+        <div style={{ marginLeft: 'auto', width: '8px', height: '8px', borderRadius: '50%', background: theme.success, boxShadow: `0 0 6px ${theme.success}` }} />
       </div>
 
       <div style={{ maxHeight: '280px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px', padding: '4px' }}>
         {messages.map((msg, i) => (
           <div key={i} style={{
             alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
-            background: msg.role === 'user' ? 'rgba(255,107,53,0.2)' : 'rgba(255,255,255,0.08)',
-            border: msg.role === 'user' ? '1px solid rgba(255,107,53,0.3)' : '1px solid rgba(255,255,255,0.12)',
+            background: msg.role === 'user' ? theme.accent : theme.inputBg,
+            border: msg.role === 'user' ? `1px solid ${theme.accent}` : `1px solid ${theme.border}`,
             borderRadius: msg.role === 'user' ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
+            color: msg.role === 'user' ? '#FFFFFF' : theme.textPrimary,
             padding: '10px 14px',
             fontSize: '13px',
             maxWidth: '85%',
             lineHeight: '1.5',
             whiteSpace: 'pre-wrap',
           }}>
-            {msg.role === 'bot' && <span style={{ fontSize: '11px', color: '#FF6B35', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>AI Mentor</span>}
+            {msg.role === 'bot' && <span style={{ fontSize: '11px', color: theme.accentLight, fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>AI Mentor</span>}
             {msg.text}
           </div>
         ))}
         {isTyping && (
           <div style={{
             alignSelf: 'flex-start',
-            background: 'rgba(255,255,255,0.08)',
-            border: '1px solid rgba(255,255,255,0.12)',
+            background: theme.inputBg,
+            border: `1px solid ${theme.border}`,
             borderRadius: '14px 14px 14px 4px',
             padding: '10px 14px',
             fontSize: '13px',
+            color: theme.textPrimary,
           }}>
-            <span style={{ fontSize: '11px', color: '#FF6B35', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>AI Mentor</span>
+            <span style={{ fontSize: '11px', color: theme.accentLight, fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>AI Mentor</span>
             <span className="typing-dots" style={{ display: 'inline-flex', gap: '4px' }}>
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'rgba(255,255,255,0.5)', animation: 'pulse 1.2s infinite', animationDelay: '0s' }} />
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'rgba(255,255,255,0.5)', animation: 'pulse 1.2s infinite', animationDelay: '0.3s' }} />
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'rgba(255,255,255,0.5)', animation: 'pulse 1.2s infinite', animationDelay: '0.6s' }} />
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: theme.textMuted, animation: 'pulse 1.2s infinite', animationDelay: '0s' }} />
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: theme.textMuted, animation: 'pulse 1.2s infinite', animationDelay: '0.3s' }} />
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: theme.textMuted, animation: 'pulse 1.2s infinite', animationDelay: '0.6s' }} />
             </span>
           </div>
         )}
@@ -123,9 +127,9 @@ export default function AIMentorChat({ skillName, currentModuleTitle }) {
             flex: 1,
             padding: '10px 14px',
             borderRadius: '12px',
-            border: '1px solid rgba(255,255,255,0.2)',
-            background: 'rgba(255,255,255,0.06)',
-            color: 'white',
+            border: `1px solid ${theme.border}`,
+            background: theme.inputBg,
+            color: theme.textPrimary,
             outline: 'none',
             fontSize: '13px',
             opacity: isTyping ? 0.5 : 1,
@@ -137,8 +141,8 @@ export default function AIMentorChat({ skillName, currentModuleTitle }) {
           style={{
             border: 'none',
             borderRadius: '12px',
-            background: isTyping ? 'rgba(255,107,53,0.4)' : '#FF6B35',
-            color: 'white',
+            background: isTyping ? theme.border : theme.accent,
+            color: '#FFFFFF',
             fontWeight: 'bold',
             padding: '10px 16px',
             cursor: isTyping ? 'not-allowed' : 'pointer',

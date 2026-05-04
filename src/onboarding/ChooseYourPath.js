@@ -1,9 +1,11 @@
 import React from 'react';
 
-export default function ChooseYourPath({ onNext, onBack }) {
+const defaultTheme = { pageBg:'#1D2226', cardBg:'#1B1F23', inputBg:'#283039', border:'#38434F', textPrimary:'#E7E9EA', textMuted:'#B0B7BF', accent:'#0A66C2', accentHover:'#004182', accentLight:'#70B5F9', success:'#057642', warning:'#F5C518', error:'#CC1016' };
+
+export default function ChooseYourPath({ onNext, onBack, theme = defaultTheme }) {
   const cardStyle = {
-    background: 'rgba(255,255,255,0.03)',
-    border: '1px solid rgba(255,255,255,0.08)',
+    background: theme.cardBg,
+    border: `1px solid ${theme.border}`,
     borderRadius: '24px',
     padding: '40px',
     cursor: 'pointer',
@@ -16,15 +18,15 @@ export default function ChooseYourPath({ onNext, onBack }) {
 
   const cardHoverStyle = {
     transform: 'translateY(-8px)',
-    background: 'rgba(255,107,53,0.1)',
-    borderColor: 'rgba(255,107,53,0.3)'
+    background: theme.accent + '1A',
+    borderColor: theme.accent + '4D'
   };
 
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)',
-      color: 'white',
+      background: theme.pageBg,
+      color: theme.textPrimary,
       fontFamily: 'var(--font-main)',
       display: 'flex',
       flexDirection: 'column',
@@ -37,9 +39,9 @@ export default function ChooseYourPath({ onNext, onBack }) {
           <button 
             onClick={onBack}
             style={{
-              background: 'rgba(255,255,255,0.05)',
-              color: 'rgba(255,255,255,0.7)',
-              border: '1px solid rgba(255,255,255,0.1)',
+              background: theme.inputBg,
+              color: theme.textMuted,
+              border: `1px solid ${theme.border}`,
               padding: '10px 20px',
               borderRadius: '20px',
               cursor: 'pointer',
@@ -48,12 +50,12 @@ export default function ChooseYourPath({ onNext, onBack }) {
               transition: 'all 0.2s'
             }}
             onMouseEnter={e => {
-              e.currentTarget.style.color = 'white';
-              e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+              e.currentTarget.style.color = theme.textPrimary;
+              e.currentTarget.style.background = theme.cardBg;
             }}
             onMouseLeave={e => {
-              e.currentTarget.style.color = 'rgba(255,255,255,0.7)';
-              e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+              e.currentTarget.style.color = theme.textMuted;
+              e.currentTarget.style.background = theme.inputBg;
             }}
           >
             ← Back
@@ -67,12 +69,12 @@ export default function ChooseYourPath({ onNext, onBack }) {
           letterSpacing: '-0.5px',
           lineHeight: '1.2'
         }}>
-          Choose Your <span style={{ color: '#FF6B35' }}>Path</span>
+          Choose Your <span style={{ color: theme.accent }}>Path</span>
         </h1>
         
         <p style={{
           fontSize: '18px',
-          color: 'rgba(255,255,255,0.6)',
+          color: theme.textMuted,
           maxWidth: '600px',
           margin: '0 auto',
           lineHeight: '1.6'
@@ -112,13 +114,13 @@ export default function ChooseYourPath({ onNext, onBack }) {
               fontSize: '24px',
               fontWeight: '800',
               marginBottom: '12px',
-              color: '#FF6B35'
+              color: theme.accent
             }}>
               I am a Beginner
             </h2>
             <p style={{
               fontSize: '16px',
-              color: 'rgba(255,255,255,0.7)',
+              color: theme.textMuted,
               lineHeight: '1.5',
               margin: 0
             }}>
@@ -142,13 +144,13 @@ export default function ChooseYourPath({ onNext, onBack }) {
               fontSize: '24px',
               fontWeight: '800',
               marginBottom: '12px',
-              color: '#9B59B6'
+              color: theme.accentLight
             }}>
               I Know Something
             </h2>
             <p style={{
               fontSize: '16px',
-              color: 'rgba(255,255,255,0.7)',
+              color: theme.textMuted,
               lineHeight: '1.5',
               margin: 0
             }}>

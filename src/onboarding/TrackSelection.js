@@ -6,7 +6,7 @@ const TRACKS = [
     title: 'Frontend Development',
     icon: '🎨',
     description: 'Build beautiful user interfaces and web applications',
-    color: '#FF6B35',
+    color: '#0A66C2',
     skills: ['HTML', 'CSS', 'JavaScript', 'React', 'UI/UX'],
     examples: 'Websites, web apps, mobile interfaces, dashboards'
   },
@@ -33,7 +33,7 @@ const TRACKS = [
     title: 'Data Science',
     icon: '📊',
     description: 'Analyze data and create meaningful insights',
-    color: '#2ECC71',
+    color: '#057642',
     skills: ['Python', 'Statistics', 'SQL', 'Visualization', 'Analytics'],
     examples: 'Data analysis, reports, dashboards, predictions'
   },
@@ -42,7 +42,7 @@ const TRACKS = [
     title: 'Mobile Development',
     icon: '📱',
     description: 'Create amazing mobile applications',
-    color: '#F39C12',
+    color: '#F5C518',
     skills: ['React Native', 'Flutter', 'iOS', 'Android', 'Mobile UI'],
     examples: 'iOS apps, Android apps, cross-platform apps'
   },
@@ -51,16 +51,18 @@ const TRACKS = [
     title: 'Cyber Security',
     icon: '🔒',
     description: 'Protect systems and data from cyber threats',
-    color: '#E74C3C',
+    color: '#CC1016',
     skills: ['Network Security', 'Ethical Hacking', 'Cryptography', 'Risk Assessment'],
     examples: 'Security testing, vulnerability assessment, protection systems'
   }
 ];
 
-export default function TrackSelection({ onNext, onBack, experienceLevel }) {
+const defaultTheme = { pageBg:'#1D2226', cardBg:'#1B1F23', inputBg:'#283039', border:'#38434F', textPrimary:'#E7E9EA', textMuted:'#B0B7BF', accent:'#0A66C2', accentHover:'#004182', accentLight:'#70B5F9', success:'#057642', warning:'#F5C518', error:'#CC1016' };
+
+export default function TrackSelection({ onNext, onBack, experienceLevel, theme = defaultTheme }) {
   const cardStyle = {
-    background: 'rgba(255,255,255,0.03)',
-    border: '1px solid rgba(255,255,255,0.08)',
+    background: theme.cardBg,
+    border: `1px solid ${theme.border}`,
     borderRadius: '20px',
     padding: '24px',
     cursor: 'pointer',
@@ -73,8 +75,8 @@ export default function TrackSelection({ onNext, onBack, experienceLevel }) {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)',
-      color: 'white',
+      background: theme.pageBg,
+      color: theme.textPrimary,
       fontFamily: 'var(--font-main)',
       display: 'flex',
       flexDirection: 'column',
@@ -87,9 +89,9 @@ export default function TrackSelection({ onNext, onBack, experienceLevel }) {
           <button 
             onClick={onBack}
             style={{
-              background: 'rgba(255,255,255,0.05)',
-              color: 'rgba(255,255,255,0.7)',
-              border: '1px solid rgba(255,255,255,0.1)',
+              background: theme.inputBg,
+              color: theme.textMuted,
+              border: `1px solid ${theme.border}`,
               padding: '10px 20px',
               borderRadius: '25px',
               cursor: 'pointer',
@@ -105,7 +107,7 @@ export default function TrackSelection({ onNext, onBack, experienceLevel }) {
           fontSize: '36px',
           fontWeight: '800',
           marginBottom: '12px',
-          background: 'linear-gradient(135deg, #FF6B35, #F39C12)',
+          background: 'linear-gradient(135deg, #0A66C2, #F5C518)',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
           backgroundClip: 'text'
@@ -114,7 +116,7 @@ export default function TrackSelection({ onNext, onBack, experienceLevel }) {
         </h1>
         <p style={{
           fontSize: '18px',
-          color: 'rgba(255,255,255,0.7)',
+          color: theme.textMuted,
           maxWidth: '600px',
           margin: '0 auto',
           lineHeight: '1.6'
@@ -148,8 +150,8 @@ export default function TrackSelection({ onNext, onBack, experienceLevel }) {
               }}
               onMouseLeave={e => {
                 e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
-                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+                e.currentTarget.style.background = theme.cardBg;
+                e.currentTarget.style.borderColor = theme.border;
               }}
             >
               {/* Icon and Title */}
@@ -181,7 +183,7 @@ export default function TrackSelection({ onNext, onBack, experienceLevel }) {
               {/* Description */}
               <p style={{
                 fontSize: '14px',
-                color: 'rgba(255,255,255,0.7)',
+                color: theme.textMuted,
                 lineHeight: '1.5',
                 margin: '0 0 16px 0'
               }}>
@@ -192,7 +194,7 @@ export default function TrackSelection({ onNext, onBack, experienceLevel }) {
               <div style={{ marginBottom: '16px' }}>
                 <div style={{
                   fontSize: '12px',
-                  color: 'rgba(255,255,255,0.5)',
+                  color: theme.textMuted,
                   marginBottom: '8px',
                   fontWeight: '600',
                   textTransform: 'uppercase',
@@ -215,8 +217,8 @@ export default function TrackSelection({ onNext, onBack, experienceLevel }) {
                   ))}
                   {track.skills.length > 3 && (
                     <span style={{
-                      background: 'rgba(255,255,255,0.1)',
-                      color: 'rgba(255,255,255,0.5)',
+                      background: theme.inputBg,
+                      color: theme.textMuted,
                       padding: '4px 10px',
                       borderRadius: '12px',
                       fontSize: '11px',
@@ -232,7 +234,7 @@ export default function TrackSelection({ onNext, onBack, experienceLevel }) {
               <div>
                 <div style={{
                   fontSize: '12px',
-                  color: 'rgba(255,255,255,0.5)',
+                  color: theme.textMuted,
                   marginBottom: '6px',
                   fontWeight: '600',
                   textTransform: 'uppercase',
@@ -242,7 +244,7 @@ export default function TrackSelection({ onNext, onBack, experienceLevel }) {
                 </div>
                 <div style={{
                   fontSize: '13px',
-                  color: 'rgba(255,255,255,0.6)',
+                  color: theme.textMuted,
                   fontStyle: 'italic'
                 }}>
                   {track.examples}
@@ -269,14 +271,14 @@ export default function TrackSelection({ onNext, onBack, experienceLevel }) {
           textAlign: 'center',
           marginTop: '32px',
           padding: '20px',
-          background: 'rgba(255,255,255,0.05)',
+          background: theme.cardBg,
           borderRadius: '16px',
-          border: '1px solid rgba(255,255,255,0.1)'
+          border: `1px solid ${theme.border}`
         }}>
-          <div style={{ fontSize: '16px', color: 'rgba(255,255,255,0.8)', marginBottom: '8px' }}>
+          <div style={{ fontSize: '16px', color: theme.textPrimary, marginBottom: '8px' }}>
             💡 Not sure which to choose?
           </div>
-          <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)' }}>
+          <div style={{ fontSize: '14px', color: theme.textMuted }}>
             Don't worry! You can always switch paths later. Pick what sounds most interesting right now.
           </div>
         </div>

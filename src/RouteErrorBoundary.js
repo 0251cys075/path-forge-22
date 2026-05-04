@@ -11,12 +11,14 @@ export class RouteErrorBoundary extends React.Component {
   }
 
   render() {
+    const theme = { pageBg:'#1D2226', textPrimary:'#E7E9EA', textMuted:'#B0B7BF', accent:'#0A66C2' };
+
     if (this.state.error) {
       return (
         <div style={{
           minHeight: '100vh',
-          background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)',
-          color: 'white',
+          background: theme.pageBg,
+          color: theme.textPrimary,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -26,7 +28,7 @@ export class RouteErrorBoundary extends React.Component {
           <div style={{ maxWidth: 420, textAlign: 'center' }}>
             <div style={{ fontSize: 48, marginBottom: 12 }}>⚠️</div>
             <h1 style={{ fontSize: 22, marginBottom: 12 }}>Something went wrong</h1>
-            <p style={{ color: 'rgba(255,255,255,0.65)', lineHeight: 1.5, marginBottom: 24 }}>
+            <p style={{ color: theme.textMuted, lineHeight: 1.5, marginBottom: 24 }}>
               This screen hit an error. Try going back to the dashboard or refresh the page.
             </p>
             <button
@@ -36,8 +38,8 @@ export class RouteErrorBoundary extends React.Component {
                 window.location.reload();
               }}
               style={{
-                background: '#FF6B35',
-                color: 'white',
+                background: theme.accent,
+                color: '#FFFFFF',
                 border: 'none',
                 padding: '14px 28px',
                 borderRadius: 24,

@@ -6,7 +6,9 @@ const mockMentors = [
   { id: 'm3', expertise: ['UI/UX', 'CSS', 'Frontend'], exp: '4+ years', style: 'Visual & Interactive', match: 89, bio: 'Specializes in pixel-perfect designs and animations.' },
 ];
 
-export default function BiasMentoring({ userData, onBack }) {
+const defaultTheme = { pageBg:'#1D2226', cardBg:'#1B1F23', inputBg:'#283039', border:'#38434F', textPrimary:'#E7E9EA', textMuted:'#B0B7BF', accent:'#0A66C2', accentHover:'#004182', accentLight:'#70B5F9', success:'#057642', warning:'#F5C518', error:'#CC1016' };
+
+export default function BiasMentoring({ userData, onBack, theme = defaultTheme }) {
   const [view, setView] = useState('intro'); // intro, quiz, matching, list, chat
   const [quizStep, setQuizStep] = useState(0);
   const [preferences, setPreferences] = useState({});
@@ -75,28 +77,28 @@ export default function BiasMentoring({ userData, onBack }) {
     }
   };
 
-  const containerStyle = { minHeight: '100vh', background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)', color: 'white', padding: '30px 20px', fontFamily: 'Arial, sans-serif' };
-  const cardStyle = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '30px', maxWidth: '800px', margin: '0 auto' };
+  const containerStyle = { minHeight: '100vh', background: theme.pageBg, color: theme.textPrimary, padding: '30px 20px', fontFamily: 'Arial, sans-serif' };
+  const cardStyle = { background: theme.cardBg, border: `1px solid ${theme.border}`, borderRadius: '20px', padding: '30px', maxWidth: '800px', margin: '0 auto' };
 
   return (
     <div style={containerStyle}>
       <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '30px' }}>
-        <button onClick={() => view === 'chat' ? setView('list') : onBack()} style={{ background: 'transparent', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.2)', padding: '8px 18px', borderRadius: '20px', cursor: 'pointer' }}>← Back</button>
-        <h1 style={{ color: '#FF6B35', fontSize: '24px', margin: 0 }}>🎯 Bias-Free Mentoring</h1>
+        <button onClick={() => view === 'chat' ? setView('list') : onBack()} style={{ background: 'transparent', color: theme.textMuted, border: `1px solid ${theme.border}`, padding: '8px 18px', borderRadius: '20px', cursor: 'pointer' }}>← Back</button>
+        <h1 style={{ color: theme.accent, fontSize: '24px', margin: 0 }}>🎯 Bias-Free Mentoring</h1>
       </div>
 
       {view === 'intro' && (
         <div style={{ ...cardStyle, textAlign: 'center' }}>
-          <h2 style={{ fontSize: '32px', marginBottom: '16px' }}>Find the Right Mentor, <span style={{ color: '#FF6B35' }}>Without Bias</span></h2>
-          <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.7)', lineHeight: '1.6', marginBottom: '30px' }}>
+          <h2 style={{ fontSize: '32px', marginBottom: '16px' }}>Find the Right Mentor, <span style={{ color: theme.accent }}>Without Bias</span></h2>
+          <p style={{ fontSize: '16px', color: theme.textMuted, lineHeight: '1.6', marginBottom: '30px' }}>
             We match you purely based on skill gaps, experience, and goals. No photos, no college tags, no names — just pure expertise alignment.
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '40px' }}>
             {['No Identity Markers', 'Skill-Based Matching', 'AI-Powered Connections'].map((text, i) => (
-              <div key={i} style={{ background: 'rgba(255,107,53,0.1)', border: '1px solid rgba(255,107,53,0.3)', padding: '16px', borderRadius: '12px', color: '#FF6B35', fontWeight: 'bold' }}>✓ {text}</div>
+              <div key={i} style={{ background: theme.inputBg, border: `1px solid ${theme.accent}`, padding: '16px', borderRadius: '12px', color: theme.accent, fontWeight: 'bold' }}>✓ {text}</div>
             ))}
           </div>
-          <button onClick={() => setView('quiz')} style={{ background: '#FF6B35', color: 'white', border: 'none', padding: '16px 40px', borderRadius: '30px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer' }}>Start Matching Quiz 🚀</button>
+          <button onClick={() => setView('quiz')} style={{ background: theme.accent, color: '#FFFFFF', border: 'none', padding: '16px 40px', borderRadius: '30px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer' }}>Start Matching Quiz 🚀</button>
         </div>
       )}
 
@@ -104,14 +106,14 @@ export default function BiasMentoring({ userData, onBack }) {
         <div style={{ ...cardStyle, textAlign: 'center' }}>
           <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '20px' }}>
             {quizQuestions.map((_, i) => (
-               <div key={i} style={{ height: '6px', width: '40px', borderRadius: '3px', background: i <= quizStep ? '#FF6B35' : 'rgba(255,255,255,0.15)', transition: 'background 0.3s' }} />
+               <div key={i} style={{ height: '6px', width: '40px', borderRadius: '3px', background: i <= quizStep ? theme.accent : theme.border, transition: 'background 0.3s' }} />
             ))}
           </div>
-          <p style={{ color: 'rgba(255,255,255,0.5)', marginBottom: '20px' }}>Step {quizStep + 1} of {quizQuestions.length}</p>
+          <p style={{ color: theme.textMuted, marginBottom: '20px' }}>Step {quizStep + 1} of {quizQuestions.length}</p>
           <h2 style={{ fontSize: '28px', marginBottom: '40px' }}>{quizQuestions[quizStep].question}</h2>
           <div style={{ display: 'grid', gap: '16px', maxWidth: '500px', margin: '0 auto' }}>
             {quizQuestions[quizStep].options.map((opt, i) => (
-              <button key={i} onClick={() => handleQuizSelect(quizQuestions[quizStep].key, opt)} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.2)', padding: '20px', borderRadius: '16px', color: 'white', fontSize: '16px', cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.border='1px solid #FF6B35'} onMouseLeave={e => e.currentTarget.style.border='1px solid rgba(255,255,255,0.2)'}>{opt}</button>
+              <button key={i} onClick={() => handleQuizSelect(quizQuestions[quizStep].key, opt)} style={{ background: theme.inputBg, border: `1px solid ${theme.border}`, padding: '20px', borderRadius: '16px', color: theme.textPrimary, fontSize: '16px', cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.border=`1px solid ${theme.accent}`} onMouseLeave={e => e.currentTarget.style.border=`1px solid ${theme.border}`}>{opt}</button>
             ))}
           </div>
         </div>
@@ -120,8 +122,8 @@ export default function BiasMentoring({ userData, onBack }) {
       {view === 'matching' && (
         <div style={{ ...cardStyle, textAlign: 'center', padding: '80px 20px' }}>
           <div style={{ fontSize: '70px', animation: 'pulse 1.5s infinite', display: 'inline-block' }}>🤖</div>
-          <h2 style={{ marginTop: '30px', color: '#FF6B35', fontSize: '28px' }}>Analyzing Profile & Preferences...</h2>
-          <p style={{ color: 'rgba(255,255,255,0.6)', marginTop: '10px' }}>Finding the perfect mentor matches based on pure skill alignment.</p>
+          <h2 style={{ marginTop: '30px', color: theme.accent, fontSize: '28px' }}>Analyzing Profile & Preferences...</h2>
+          <p style={{ color: theme.textMuted, marginTop: '10px' }}>Finding the perfect mentor matches based on pure skill alignment.</p>
         </div>
       )}
 
@@ -131,18 +133,18 @@ export default function BiasMentoring({ userData, onBack }) {
           <div style={{ display: 'grid', gap: '20px' }}>
             {matchedMentors.map((mentor, i) => (
               <div key={i} style={{ ...cardStyle, display: 'flex', gap: '20px', alignItems: 'center', margin: 0, transition: 'transform 0.2s', cursor: 'pointer' }} onMouseEnter={e => e.currentTarget.style.transform='translateY(-5px)'} onMouseLeave={e => e.currentTarget.style.transform='translateY(0)'}>
-                <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'linear-gradient(45deg, #FF6B35, #9B59B6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '30px', boxShadow: '0 4px 15px rgba(255,107,53,0.3)' }}>🎭</div>
+                <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: `linear-gradient(45deg, ${theme.accent}, #9B59B6)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '30px', boxShadow: `0 4px 15px ${theme.accent}40` }}>🎭</div>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <h3 style={{ margin: '0 0 8px 0', fontSize: '20px' }}>Anonymous Mentor #{i+1}</h3>
-                    <div style={{ background: 'rgba(46,204,113,0.15)', color: '#2ECC71', padding: '6px 12px', borderRadius: '12px', fontSize: '14px', fontWeight: 'bold', border: '1px solid rgba(46,204,113,0.3)' }}>{mentor.match}% Match</div>
+                    <div style={{ background: theme.inputBg, color: theme.success, padding: '6px 12px', borderRadius: '12px', fontSize: '14px', fontWeight: 'bold', border: `1px solid ${theme.success}` }}>{mentor.match}% Match</div>
                   </div>
                   <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
-                    {mentor.expertise.map((exp, j) => <span key={j} style={{ background: 'rgba(255,255,255,0.1)', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>{exp}</span>)}
+                    {mentor.expertise.map((exp, j) => <span key={j} style={{ background: theme.inputBg, padding: '4px 10px', borderRadius: '6px', fontSize: '12px', border: `1px solid ${theme.border}` }}>{exp}</span>)}
                   </div>
-                  <p style={{ margin: 0, color: 'rgba(255,255,255,0.6)', fontSize: '14px' }}>{mentor.exp} • {mentor.style}</p>
+                  <p style={{ margin: 0, color: theme.textMuted, fontSize: '14px' }}>{mentor.exp} • {mentor.style}</p>
                 </div>
-                <button onClick={() => { setSelectedMentor(mentor); setChatMessages([{ role: 'bot', text: `Hello! I'm your AI Mentor matched to your profile. Let's discuss your goals around ${mentor.expertise.join(', ')}.` }]); setView('chat'); }} style={{ background: '#FF6B35', color: 'white', border: 'none', padding: '14px 28px', borderRadius: '14px', fontWeight: 'bold', cursor: 'pointer', fontSize: '15px' }}>Connect</button>
+                <button onClick={() => { setSelectedMentor(mentor); setChatMessages([{ role: 'bot', text: `Hello! I'm your AI Mentor matched to your profile. Let's discuss your goals around ${mentor.expertise.join(', ')}.` }]); setView('chat'); }} style={{ background: theme.accent, color: '#FFFFFF', border: 'none', padding: '14px 28px', borderRadius: '14px', fontWeight: 'bold', cursor: 'pointer', fontSize: '15px' }}>Connect</button>
               </div>
             ))}
           </div>
@@ -151,32 +153,32 @@ export default function BiasMentoring({ userData, onBack }) {
 
       {view === 'chat' && selectedMentor && (
         <div style={{ ...cardStyle, height: '70vh', display: 'flex', flexDirection: 'column', padding: '24px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '20px', marginBottom: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: `1px solid ${theme.border}`, paddingBottom: '20px', marginBottom: '20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'linear-gradient(45deg, #FF6B35, #9B59B6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>🎭</div>
+              <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: `linear-gradient(45deg, ${theme.accent}, #9B59B6)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>🎭</div>
               <div>
                 <div style={{ fontWeight: 'bold', fontSize: '16px' }}>Anonymous Mentor Session</div>
-                <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', marginTop: '4px' }}>{selectedMentor.expertise.join(' • ')}</div>
+                <div style={{ fontSize: '13px', color: theme.textMuted, marginTop: '4px' }}>{selectedMentor.expertise.join(' • ')}</div>
               </div>
             </div>
-            <div style={{ color: '#2ECC71', fontSize: '14px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(46,204,113,0.1)', padding: '6px 12px', borderRadius: '20px' }}><span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#2ECC71', boxShadow: '0 0 6px #2ecc71' }}/> Live</div>
+            <div style={{ color: theme.success, fontSize: '14px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', background: theme.inputBg, padding: '6px 12px', borderRadius: '20px' }}><span style={{ width: '8px', height: '8px', borderRadius: '50%', background: theme.success, boxShadow: `0 0 6px ${theme.success}` }}/> Live</div>
           </div>
           
           <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px', paddingRight: '10px' }}>
             {chatMessages.map((msg, i) => (
-              <div key={i} style={{ alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start', background: msg.role === 'user' ? 'rgba(255,107,53,0.15)' : 'rgba(255,255,255,0.06)', border: msg.role === 'user' ? '1px solid rgba(255,107,53,0.4)' : '1px solid rgba(255,255,255,0.15)', padding: '14px 18px', borderRadius: msg.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px', maxWidth: '80%', lineHeight: '1.6', fontSize: '14px', color: 'rgba(255,255,255,0.9)' }}>
+              <div key={i} style={{ alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start', background: msg.role === 'user' ? theme.accent : theme.inputBg, border: msg.role === 'user' ? `1px solid ${theme.accent}` : `1px solid ${theme.border}`, padding: '14px 18px', borderRadius: msg.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px', maxWidth: '80%', lineHeight: '1.6', fontSize: '14px', color: msg.role === 'user' ? '#FFFFFF' : theme.textPrimary }}>
                 {msg.text}
               </div>
             ))}
-            {isTyping && <div style={{ alignSelf: 'flex-start', background: 'rgba(255,255,255,0.06)', padding: '14px 18px', borderRadius: '18px 18px 18px 4px', color: '#FF6B35', fontWeight: 'bold', display: 'flex', gap: '4px' }}>
+            {isTyping && <div style={{ alignSelf: 'flex-start', background: theme.inputBg, padding: '14px 18px', borderRadius: '18px 18px 18px 4px', color: theme.accent, fontWeight: 'bold', display: 'flex', gap: '4px' }}>
                <span style={{ animation: 'pulse 1s infinite' }}>.</span><span style={{ animation: 'pulse 1s infinite 0.2s' }}>.</span><span style={{ animation: 'pulse 1s infinite 0.4s' }}>.</span>
             </div>}
             <div ref={chatEndRef} />
           </div>
 
           <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
-            <input value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSendMessage()} placeholder="Ask your mentor anything..." disabled={isTyping} style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.2)', padding: '16px', borderRadius: '14px', color: 'white', outline: 'none', fontSize: '15px' }} />
-            <button onClick={handleSendMessage} disabled={isTyping} style={{ background: '#FF6B35', border: 'none', color: 'white', padding: '0 28px', borderRadius: '14px', fontWeight: 'bold', cursor: 'pointer', fontSize: '15px' }}>Send 🚀</button>
+            <input value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSendMessage()} placeholder="Ask your mentor anything..." disabled={isTyping} style={{ flex: 1, background: theme.inputBg, border: `1px solid ${theme.border}`, padding: '16px', borderRadius: '14px', color: theme.textPrimary, outline: 'none', fontSize: '15px' }} />
+            <button onClick={handleSendMessage} disabled={isTyping} style={{ background: theme.accent, border: 'none', color: '#FFFFFF', padding: '0 28px', borderRadius: '14px', fontWeight: 'bold', cursor: 'pointer', fontSize: '15px' }}>Send 🚀</button>
           </div>
         </div>
       )}

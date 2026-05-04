@@ -40,7 +40,9 @@ const compressImage = (file, maxWidth = 900, quality = 0.75) =>
     };
   });
 
-export default function CommunityFeed({ user, userData, onBack, onGoToProfile }) {
+const defaultTheme = { pageBg:'#1D2226', cardBg:'#1B1F23', inputBg:'#283039', border:'#38434F', textPrimary:'#E7E9EA', textMuted:'#B0B7BF', accent:'#0A66C2', accentHover:'#004182', accentLight:'#70B5F9', success:'#057642', warning:'#F5C518', error:'#CC1016' };
+
+export default function CommunityFeed({ user, userData, onBack, onGoToProfile, theme = defaultTheme }) {
   const [posts, setPosts] = useState([]);
   const [newPostText, setNewPostText] = useState('');
   const [postImage, setPostImage] = useState(null);  // base64 image for new post
@@ -195,11 +197,11 @@ export default function CommunityFeed({ user, userData, onBack, onGoToProfile })
   const selectedProfileName = selectedProfileId ? posts.find(p => p.authorId === selectedProfileId)?.authorName : '';
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)', color: 'white', fontFamily: 'Arial, sans-serif', padding: '30px 20px', position: 'relative' }}>
+    <div style={{ minHeight: '100vh', background: theme.pageBg, color: theme.textPrimary, fontFamily: 'Arial, sans-serif', padding: '30px 20px', position: 'relative' }}>
 
       {/* Toast */}
       {toast && (
-        <div style={{ position: 'fixed', bottom: '30px', left: '50%', transform: 'translateX(-50%)', background: 'rgba(30,30,60,0.97)', border: '1px solid rgba(255,107,53,0.5)', color: 'white', padding: '12px 24px', borderRadius: '30px', fontSize: '14px', fontWeight: 'bold', zIndex: 9999, boxShadow: '0 4px 20px rgba(0,0,0,0.5)', animation: 'fadeIn 0.3s ease' }}>
+        <div style={{ position: 'fixed', bottom: '30px', left: '50%', transform: 'translateX(-50%)', background: theme.cardBg, border: `1px solid ${theme.accent}`, color: theme.textPrimary, padding: '12px 24px', borderRadius: '30px', fontSize: '14px', fontWeight: 'bold', zIndex: 9999, boxShadow: '0 4px 20px rgba(0,0,0,0.5)', animation: 'fadeIn 0.3s ease' }}>
           {toast}
         </div>
       )}
@@ -208,17 +210,17 @@ export default function CommunityFeed({ user, userData, onBack, onGoToProfile })
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '30px' }}>
-          <button onClick={() => selectedProfileId ? setSelectedProfileId(null) : (onBack && onBack())} style={{ background: 'transparent', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.2)', padding: '8px 18px', borderRadius: '20px', cursor: 'pointer', fontSize: '13px' }}>← Back</button>
-          <h1 style={{ color: '#FF6B35', fontSize: '22px', fontWeight: 'bold', margin: 0 }}>
+          <button onClick={() => selectedProfileId ? setSelectedProfileId(null) : (onBack && onBack())} style={{ background: 'transparent', color: theme.textMuted, border: `1px solid ${theme.border}`, padding: '8px 18px', borderRadius: '20px', cursor: 'pointer', fontSize: '13px' }}>← Back</button>
+          <h1 style={{ color: theme.accent, fontSize: '22px', fontWeight: 'bold', margin: 0 }}>
             {selectedProfileId ? `${selectedProfileName}'s Posts` : '⚡ Global Community Feed'}
           </h1>
         </div>
 
         {/* Post Composer */}
         {!selectedProfileId && (
-          <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '20px', marginBottom: '30px' }}>
+          <div style={{ background: theme.cardBg, border: `1px solid ${theme.border}`, borderRadius: '16px', padding: '20px', marginBottom: '30px' }}>
             <div style={{ display: 'flex', gap: '12px' }}>
-              <div onClick={() => handleAvatarClick(user.uid)} style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, cursor: 'pointer' }}>
+              <div onClick={() => handleAvatarClick(user.uid)} style={{ width: '44px', height: '44px', borderRadius: '50%', background: theme.inputBg, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, cursor: 'pointer' }}>
                 {displayPhoto ? <img src={displayPhoto} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : '👤'}
               </div>
               <div style={{ flex: 1 }}>
@@ -226,14 +228,14 @@ export default function CommunityFeed({ user, userData, onBack, onGoToProfile })
                   value={newPostText}
                   onChange={(e) => setNewPostText(e.target.value)}
                   placeholder="What's happening?"
-                  style={{ width: '100%', minHeight: '80px', padding: '12px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(0,0,0,0.2)', color: 'white', fontSize: '15px', resize: 'vertical', boxSizing: 'border-box', outline: 'none' }}
+                  style={{ width: '100%', minHeight: '80px', padding: '12px', borderRadius: '12px', border: `1px solid ${theme.border}`, background: theme.inputBg, color: theme.textPrimary, fontSize: '15px', resize: 'vertical', boxSizing: 'border-box', outline: 'none' }}
                 />
 
                 {/* Image preview */}
                 {postImage && (
-                  <div style={{ position: 'relative', marginTop: '10px', borderRadius: '12px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  <div style={{ position: 'relative', marginTop: '10px', borderRadius: '12px', overflow: 'hidden', border: `1px solid ${theme.border}` }}>
                     <img src={postImage} alt="preview" style={{ width: '100%', maxHeight: '300px', objectFit: 'cover', display: 'block' }} />
-                    <button onClick={() => setPostImage(null)} style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(0,0,0,0.7)', border: 'none', color: 'white', width: '28px', height: '28px', borderRadius: '50%', cursor: 'pointer', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+                    <button onClick={() => setPostImage(null)} style={{ position: 'absolute', top: '8px', right: '8px', background: theme.inputBg, border: 'none', color: theme.textPrimary, width: '28px', height: '28px', borderRadius: '50%', cursor: 'pointer', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
                   </div>
                 )}
 
@@ -243,14 +245,14 @@ export default function CommunityFeed({ user, userData, onBack, onGoToProfile })
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px' }}>
                   <button
                     onClick={() => imgInputRef.current?.click()}
-                    style={{ background: postImage ? 'rgba(255,107,53,0.2)' : 'rgba(255,255,255,0.1)', color: postImage ? '#FF6B35' : 'white', border: postImage ? '1px solid rgba(255,107,53,0.4)' : 'none', padding: '6px 14px', borderRadius: '20px', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                    style={{ background: postImage ? theme.cardBg : theme.inputBg, color: postImage ? theme.accent : theme.textPrimary, border: postImage ? `1px solid ${theme.accent}` : 'none', padding: '6px 14px', borderRadius: '20px', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
                   >
                     🖼️ {postImage ? 'Image Added ✓' : 'Add Image'}
                   </button>
                   <button
                     onClick={handlePost}
                     disabled={posting || (!newPostText.trim() && !postImage)}
-                    style={{ background: posting || (!newPostText.trim() && !postImage) ? 'rgba(255,107,53,0.5)' : '#FF6B35', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '20px', fontWeight: 'bold', cursor: posting || (!newPostText.trim() && !postImage) ? 'not-allowed' : 'pointer' }}
+                    style={{ background: posting || (!newPostText.trim() && !postImage) ? theme.inputBg : theme.accent, color: '#FFFFFF', border: 'none', padding: '10px 24px', borderRadius: '20px', fontWeight: 'bold', cursor: posting || (!newPostText.trim() && !postImage) ? 'not-allowed' : 'pointer' }}
                   >
                     {posting ? 'Posting...' : 'Post'}
                   </button>
@@ -263,7 +265,7 @@ export default function CommunityFeed({ user, userData, onBack, onGoToProfile })
         {/* Posts List */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {displayedPosts.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '60px 20px', color: 'rgba(255,255,255,0.4)' }}>
+            <div style={{ textAlign: 'center', padding: '60px 20px', color: theme.textMuted }}>
               <div style={{ fontSize: '40px', marginBottom: '16px' }}>📄</div>
               <div>No posts yet. Be the first to share!</div>
             </div>
@@ -280,16 +282,16 @@ export default function CommunityFeed({ user, userData, onBack, onGoToProfile })
               const postAuthorName = post.isRepost ? post.originalAuthorName : post.authorName;
 
               return (
-                <div key={post.id} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '20px' }}>
+                <div key={post.id} style={{ background: theme.cardBg, border: `1px solid ${theme.border}`, borderRadius: '16px', padding: '20px' }}>
 
                   {post.isRepost && (
-                    <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ fontSize: '12px', color: theme.textMuted, marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <span>🔄</span> {post.authorName} reposted
                     </div>
                   )}
 
                   <div style={{ display: 'flex', gap: '12px' }}>
-                    <div onClick={() => handleAvatarClick(postAuthorId)} title={postAuthorId === user.uid ? 'Go to your profile' : `View ${postAuthorName}'s posts`} style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, cursor: 'pointer' }}>
+                    <div onClick={() => handleAvatarClick(postAuthorId)} title={postAuthorId === user.uid ? 'Go to your profile' : `View ${postAuthorName}'s posts`} style={{ width: '48px', height: '48px', borderRadius: '50%', background: theme.inputBg, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, cursor: 'pointer' }}>
                       {postAuthorPhoto ? <img src={postAuthorPhoto} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : '👤'}
                     </div>
 
@@ -297,62 +299,62 @@ export default function CommunityFeed({ user, userData, onBack, onGoToProfile })
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         <div onClick={() => handleAvatarClick(postAuthorId)} style={{ cursor: 'pointer' }}>
                           <div style={{ fontWeight: 'bold', fontSize: '15px' }}>{postAuthorName}</div>
-                          <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', marginTop: '2px' }}>{timeAgo(postDate)}</div>
+                          <div style={{ fontSize: '12px', color: theme.textMuted, marginTop: '2px' }}>{timeAgo(postDate)}</div>
                         </div>
                         {post.authorId === user.uid && (
-                          <button onClick={() => handleDelete(post.id)} title="Delete post" style={{ background: 'rgba(255,75,75,0.1)', border: '1px solid rgba(255,75,75,0.2)', color: '#FF6B6B', width: '30px', height: '30px', borderRadius: '50%', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>🗑</button>
+                          <button onClick={() => handleDelete(post.id)} title="Delete post" style={{ background: theme.inputBg, border: `1px solid ${theme.error}`, color: theme.error, width: '30px', height: '30px', borderRadius: '50%', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>🗑</button>
                         )}
                       </div>
 
                       {post.text && (
-                        <div style={{ marginTop: '10px', fontSize: '15px', lineHeight: '1.5', color: 'rgba(255,255,255,0.9)', whiteSpace: 'pre-wrap' }}>{post.text}</div>
+                        <div style={{ marginTop: '10px', fontSize: '15px', lineHeight: '1.5', color: theme.textPrimary, whiteSpace: 'pre-wrap' }}>{post.text}</div>
                       )}
 
                       {/* Post image display */}
                       {post.imageUrl && (
-                        <div style={{ marginTop: '12px', borderRadius: '12px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)' }}>
+                        <div style={{ marginTop: '12px', borderRadius: '12px', overflow: 'hidden', border: `1px solid ${theme.border}` }}>
                           <img src={post.imageUrl} alt="post" style={{ width: '100%', maxHeight: '400px', objectFit: 'cover', display: 'block' }} />
                         </div>
                       )}
 
                       {/* Action Buttons */}
-                      <div style={{ display: 'flex', gap: '24px', marginTop: '16px', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '12px' }}>
-                        <button onClick={() => handleLike(post.id, post.likes)} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'transparent', border: 'none', color: hasLiked ? '#FF6B35' : 'rgba(255,255,255,0.5)', cursor: 'pointer', fontSize: '14px', padding: 0, transition: 'color 0.2s' }}>
+                      <div style={{ display: 'flex', gap: '24px', marginTop: '16px', borderTop: `1px solid ${theme.border}`, paddingTop: '12px' }}>
+                        <button onClick={() => handleLike(post.id, post.likes)} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'transparent', border: 'none', color: hasLiked ? theme.accent : theme.textMuted, cursor: 'pointer', fontSize: '14px', padding: 0, transition: 'color 0.2s' }}>
                           <span style={{ fontSize: '16px' }}>{hasLiked ? '❤️' : '🤍'}</span>{likeCount > 0 ? likeCount : ''}
                         </button>
-                        <button onClick={() => setActiveCommentPost(activeCommentPost === post.id ? null : post.id)} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'transparent', border: 'none', color: activeCommentPost === post.id ? '#FF6B35' : 'rgba(255,255,255,0.5)', cursor: 'pointer', fontSize: '14px', padding: 0 }}>
+                        <button onClick={() => setActiveCommentPost(activeCommentPost === post.id ? null : post.id)} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'transparent', border: 'none', color: activeCommentPost === post.id ? theme.accent : theme.textMuted, cursor: 'pointer', fontSize: '14px', padding: 0 }}>
                           <span style={{ fontSize: '16px' }}>💬</span>{commentCount > 0 ? commentCount : ''}
                         </button>
-                        <button onClick={() => handleRepost(post)} title={hasReposted ? 'Click to undo repost' : 'Repost'} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'transparent', border: 'none', color: hasReposted ? '#2ECC71' : 'rgba(255,255,255,0.5)', cursor: 'pointer', fontSize: '14px', padding: 0, transition: 'color 0.2s' }}>
+                        <button onClick={() => handleRepost(post)} title={hasReposted ? 'Click to undo repost' : 'Repost'} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'transparent', border: 'none', color: hasReposted ? theme.success : theme.textMuted, cursor: 'pointer', fontSize: '14px', padding: 0, transition: 'color 0.2s' }}>
                           <span style={{ fontSize: '16px' }}>🔄</span>{repostCount > 0 ? repostCount : ''}
                         </button>
-                        <button onClick={() => handleShare(post.id)} title="Copy link" style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.5)', cursor: 'pointer', fontSize: '14px', padding: 0 }}>
+                        <button onClick={() => handleShare(post.id)} title="Copy link" style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'transparent', border: 'none', color: theme.textMuted, cursor: 'pointer', fontSize: '14px', padding: 0 }}>
                           <span style={{ fontSize: '16px' }}>📤</span>
                         </button>
                       </div>
 
                       {/* Comments */}
                       {activeCommentPost === post.id && (
-                        <div style={{ marginTop: '16px', background: 'rgba(0,0,0,0.15)', borderRadius: '12px', padding: '16px' }}>
+                        <div style={{ marginTop: '16px', background: theme.pageBg, borderRadius: '12px', padding: '16px' }}>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px' }}>
                             {post.comments?.map((c) => (
                               <div key={c.id} style={{ display: 'flex', gap: '10px' }}>
-                                <div onClick={() => handleAvatarClick(c.authorId)} style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, cursor: 'pointer' }}>
+                                <div onClick={() => handleAvatarClick(c.authorId)} style={{ width: '28px', height: '28px', borderRadius: '50%', background: theme.inputBg, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, cursor: 'pointer' }}>
                                   {c.authorPhoto ? <img src={c.authorPhoto} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: '12px' }}>👤</span>}
                                 </div>
-                                <div style={{ flex: 1, background: 'rgba(255,255,255,0.05)', padding: '10px 14px', borderRadius: '0 12px 12px 12px' }}>
+                                <div style={{ flex: 1, background: theme.cardBg, padding: '10px 14px', borderRadius: '0 12px 12px 12px' }}>
                                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
                                     <span onClick={() => handleAvatarClick(c.authorId)} style={{ fontWeight: 'bold', fontSize: '13px', cursor: 'pointer' }}>{c.authorName}</span>
-                                    <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>{timeAgo(new Date(c.createdAt))}</span>
+                                    <span style={{ fontSize: '11px', color: theme.textMuted }}>{timeAgo(new Date(c.createdAt))}</span>
                                   </div>
-                                  <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.8)' }}>{c.text}</div>
+                                  <div style={{ fontSize: '14px', color: theme.textPrimary }}>{c.text}</div>
                                 </div>
                               </div>
                             ))}
                           </div>
                           <div style={{ display: 'flex', gap: '10px' }}>
-                            <input value={commentText} onChange={(e) => setCommentText(e.target.value)} placeholder="Write a comment..." onKeyDown={(e) => { if (e.key === 'Enter') handleComment(post.id); }} style={{ flex: 1, padding: '10px 14px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(0,0,0,0.2)', color: 'white', fontSize: '14px', outline: 'none' }} />
-                            <button onClick={() => handleComment(post.id)} disabled={!commentText.trim()} style={{ background: commentText.trim() ? '#FF6B35' : 'rgba(255,107,53,0.3)', color: 'white', border: 'none', padding: '0 16px', borderRadius: '20px', fontWeight: 'bold', cursor: commentText.trim() ? 'pointer' : 'not-allowed' }}>Send</button>
+                            <input value={commentText} onChange={(e) => setCommentText(e.target.value)} placeholder="Write a comment..." onKeyDown={(e) => { if (e.key === 'Enter') handleComment(post.id); }} style={{ flex: 1, padding: '10px 14px', borderRadius: '20px', border: `1px solid ${theme.border}`, background: theme.inputBg, color: theme.textPrimary, fontSize: '14px', outline: 'none' }} />
+                            <button onClick={() => handleComment(post.id)} disabled={!commentText.trim()} style={{ background: commentText.trim() ? theme.accent : theme.inputBg, color: commentText.trim() ? '#FFFFFF' : theme.textMuted, border: 'none', padding: '0 16px', borderRadius: '20px', fontWeight: 'bold', cursor: commentText.trim() ? 'pointer' : 'not-allowed' }}>Send</button>
                           </div>
                         </div>
                       )}

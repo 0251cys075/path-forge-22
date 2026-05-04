@@ -11,7 +11,26 @@ const PREDEFINED_FIELDS = [
   "Other"
 ];
 
-export default function AIInterview({ userData, onBack, onComplete }) {
+const MAX_WARNINGS = 5;
+const MAX_PERSON_WARNINGS = 3; // Terminate after 3 person violations
+const MAX_EYE_WARNINGS = 5; // Terminate after 5 eye tracking violations
+
+export default function AIInterview({ userData, onBack, onComplete, theme }) {
+  const defaultTheme = {
+    pageBg: '#1D2226',
+    cardBg: '#1B1F23',
+    inputBg: '#283039',
+    border: '#38434F',
+    textPrimary: '#E7E9EA',
+    textMuted: '#B0B7BF',
+    accent: '#0A66C2',
+    accentHover: '#004182',
+    accentLight: '#70B5F9',
+    success: '#057642',
+    warning: '#F5C518',
+    error: '#CC1016',
+  };
+  const currentTheme = theme || defaultTheme;
   // Setup Phase
   const [setupPhase, setSetupPhase] = useState(true);
   const [selectedField, setSelectedField] = useState('');
@@ -38,22 +57,185 @@ export default function AIInterview({ userData, onBack, onComplete }) {
   
   // Enhanced Detection States
   const [warnings, setWarnings] = useState([]);
+  const [warningCount, setWarningCount] = useState(0);
   const [eyeContactScore, setEyeContactScore] = useState(100);
   const [personDetected, setPersonDetected] = useState(false);
   const [sessionTerminated, setSessionTerminated] = useState(false);
-  const [lastWarningTime, setLastWarningTime] = useState(0);
+  
+  // Biometric Protection States
+  const [personWarningCount, setPersonWarningCount] = useState(0);
+  const [eyeWarningCount, setEyeWarningCount] = useState(0);
+  const [eyeTrackingData, setEyeTrackingData] = useState({ x: 0, y: 0, movement: 0 });
+  const [personBoundingBox, setPersonBoundingBox] = useState({ x: 0, y: 0, width: 0, height: 0 });
+  const [biometricStatus, setBiometricStatus] = useState('active'); // active, warning, terminated
   
   const videoRef = useRef(null);
   const canvasRef = useRef(document.createElement('canvas'));
   const mediaRecorderRef = useRef(null);
   const chunksRef = useRef([]);
   const audioContextRef = useRef(null);
+  const lastWarningTime = useRef(0);
   const analyzerRef = useRef(null);
   const recognitionRef = useRef(null);
   const prevMassesRef = useRef({ l: 0, r: 0 });
+  
+  // Biometric Tracking Refs
+  const lastPersonWarningTime = useRef(0);
+  const lastEyeWarningTime = useRef(0);
+  const previousEyePosition = useRef({ x: 0, y: 0 });
+  const eyeMovementAccumulator = useRef(0);
+  const personDetectionHistory = useRef([]);
 
   const targetField = selectedField === 'Other' ? customField : selectedField;
   const isFieldValid = targetField.length > 2 && /^[a-zA-Z\s]+$/.test(targetField);
+
+  // Biometric Protection Functions
+  const detectPersonInFrame = (frameData) => {
+    // Square detection method - analyze frame for human presence
+    let skinPixels = 0;
+    let totalPixels = frameData.length / 4;
+    let minX = 320, maxX = 0, minY = 240, maxY = 0;
+    
+    for (let i = 0; i < frameData.length; i += 4) {
+      const x = (i / 4) % 320;
+      const y = Math.floor((i / 4) / 320);
+      const r = frameData[i];
+      const g = frameData[i + 1];
+      const b = frameData[i + 2];
+      
+      // Skin detection
+      const isSkin = (r > 95 && g > 40 && b > 20 && r > g && r > b);
+      
+      if (isSkin) {
+        skinPixels++;
+        minX = Math.min(minX, x);
+        maxX = Math.max(maxX, x);
+        minY = Math.min(minY, y);
+        maxY = Math.max(maxY, y);
+      }
+    }
+    
+    const skinRatio = skinPixels / totalPixels;
+    const hasPerson = skinRatio > 0.05; // At least 5% skin pixels
+    
+    // Calculate bounding box for person
+    const boundingBox = hasPerson ? {
+      x: minX,
+      y: minY,
+      width: maxX - minX,
+      height: maxY - minY
+    } : null;
+    
+    // Check for multiple people using square method
+    const personArea = (maxX - minX) * (maxY - minY);
+    const expectedSinglePersonArea = 15000; // Expected area for one person
+    const multiplePersonThreshold = expectedSinglePersonArea * 2.5;
+    
+    const multiplePeopleDetected = hasPerson && personArea > multiplePersonThreshold;
+    
+    return {
+      hasPerson,
+      multiplePeopleDetected,
+      boundingBox,
+      confidence: skinRatio
+    };
+  };
+  
+  const trackEyeMovement = (frameData, boundingBox) => {
+    if (!boundingBox) return { x: 0, y: 0, movement: 0, valid: false };
+    
+    // Focus on eye region (upper third of face)
+    const eyeRegionY = boundingBox.y + (boundingBox.height * 0.2);
+    const eyeRegionHeight = boundingBox.height * 0.3;
+    const eyeRegionX = boundingBox.x + (boundingBox.width * 0.2);
+    const eyeRegionWidth = boundingBox.width * 0.6;
+    
+    let eyePixels = [];
+    
+    for (let y = eyeRegionY; y < eyeRegionY + eyeRegionHeight && y < 240; y++) {
+      for (let x = eyeRegionX; x < eyeRegionX + eyeRegionWidth && x < 320; x++) {
+        const i = (y * 320 + x) * 4;
+        const r = frameData[i];
+        const g = frameData[i + 1];
+        const b = frameData[i + 2];
+        
+        // Eye detection (dark pixels in eye region)
+        const brightness = (r + g + b) / 3;
+        if (brightness < 80) { // Dark pixels likely eyes
+          eyePixels.push({ x, y, brightness });
+        }
+      }
+    }
+    
+    if (eyePixels.length < 10) return { x: 0, y: 0, movement: 0, valid: false };
+    
+    // Calculate center of eye region
+    const avgX = eyePixels.reduce((sum, p) => sum + p.x, 0) / eyePixels.length;
+    const avgY = eyePixels.reduce((sum, p) => sum + p.y, 0) / eyePixels.length;
+    
+    // Calculate movement from previous position
+    const prevX = previousEyePosition.current.x || avgX;
+    const prevY = previousEyePosition.current.y || avgY;
+    const movement = Math.sqrt(Math.pow(avgX - prevX, 2) + Math.pow(avgY - prevY, 2));
+    
+    // Update previous position
+    previousEyePosition.current = { x: avgX, y: avgY };
+    
+    // Accumulate movement
+    eyeMovementAccumulator.current += movement;
+    
+    return {
+      x: avgX,
+      y: avgY,
+      movement: eyeMovementAccumulator.current,
+      valid: true
+    };
+  };
+  
+  const handlePersonViolation = () => {
+    const now = Date.now();
+    if (now - lastPersonWarningTime.current < 10000) return; // 10 second throttle
+    
+    setPersonWarningCount(prev => {
+      const newCount = prev + 1;
+      
+      if (newCount >= MAX_PERSON_WARNINGS) {
+        setBiometricStatus('terminated');
+        terminateSession('Multiple person violations detected. Session terminated for security reasons.');
+      } else {
+        setBiometricStatus('warning');
+        addWarning('multiple_persons', `👥 Unauthorized person detected! Warning ${newCount}/${MAX_PERSON_WARNINGS}`);
+      }
+      
+      return newCount;
+    });
+    
+    lastPersonWarningTime.current = now;
+  };
+  
+  const handleEyeViolation = () => {
+    const now = Date.now();
+    if (now - lastEyeWarningTime.current < 8000) return; // 8 second throttle for eye tracking
+    
+    setEyeWarningCount(prev => {
+      const newCount = prev + 1;
+      
+      if (newCount >= MAX_EYE_WARNINGS) {
+        setBiometricStatus('terminated');
+        terminateSession('Excessive eye movement detected. Session terminated for security reasons.');
+      } else {
+        addWarning('eye_tracking', `👁️ Suspicious eye movement detected! Warning ${newCount}/${MAX_EYE_WARNINGS}`);
+      }
+      
+      return newCount;
+    });
+    
+    lastEyeWarningTime.current = now;
+  };
+  
+  const resetEyeMovementAccumulator = () => {
+    eyeMovementAccumulator.current = 0;
+  };
 
   // Warning System Functions
   const addWarning = (type, message) => {
@@ -68,7 +250,6 @@ export default function AIInterview({ userData, onBack, onComplete }) {
     };
     
     setWarnings(prev => [...prev, newWarning]);
-    setLastWarningTime(now);
     
     // Auto-remove warning after 5 seconds
     setTimeout(() => {
@@ -167,13 +348,12 @@ export default function AIInterview({ userData, onBack, onComplete }) {
     // eslint-disable-next-line
   }, [setupPhase]);
 
-  // ENHANCED PERSON DETECTION WITH FACE AND EYE CONTACT TRACKING
+  // ENHANCED BIOMETRIC PROTECTION SYSTEM
   useEffect(() => {
     if (setupPhase || !videoRef.current || results || sessionTerminated) return;
 
     const ctx = canvasRef.current.getContext('2d', { willReadFrequently: true });
-    let consecutiveNoPersonFrames = 0;
-    let consecutiveLowEyeContactFrames = 0;
+    let frameCount = 0;
     
     const interval = setInterval(() => {
       if (!videoRef.current) return;
@@ -183,111 +363,70 @@ export default function AIInterview({ userData, onBack, onComplete }) {
       ctx.drawImage(videoRef.current, 0, 0, 320, 240);
       const frame = ctx.getImageData(0, 0, 320, 240).data;
       
-      // Enhanced face detection
-      let facePixels = 0;
-      let minX = 320, maxX = 0, minY = 240, maxY = 0;
-
-      for (let i = 0; i < frame.length; i += 4) { 
-        const r = frame[i];
-        const g = frame[i+1];
-        const b = frame[i+2];
-        const x = (i/4) % 320;
-        const y = Math.floor((i/4) / 320);
-        
-        // Enhanced skin detection for face
-        const isSkin = (r > 95 && g > 40 && b > 20 && 
-                       r > g && r > b && 
-                       Math.abs(r - g) > 15 && 
-                       r - b > 15);
-
-        if (isSkin) {
-          facePixels++;
-          if (x < minX) minX = x;
-          if (x > maxX) maxX = x;
-          if (y < minY) minY = y;
-          if (y > maxY) maxY = y;
-        }
-      }
-
-      // Person Detection Logic
-      const minFacePixels = 500; // Minimum pixels for a face
-      const faceDetected = facePixels > minFacePixels;
+      frameCount++;
       
-      if (faceDetected) {
-        consecutiveNoPersonFrames = 0;
+      // BIOMETRIC PERSON DETECTION (Square Method)
+      const personDetection = detectPersonInFrame(frame);
+      
+      if (personDetection.hasPerson) {
         setPersonDetected(true);
         
-        // Update bounding box
-        setBoundingBox({ 
-          x: (minX/320)*100, 
-          y: (minY/240)*100, 
-          w: ((maxX-minX)/320)*100, 
-          h: ((maxY-minY)/240)*100 
-        });
-
-        // Eye Contact Detection
-        const faceCenterX = (minX + maxX) / 2;
-        const frameCenterX = 320 / 2;
-        const eyeContactThreshold = 40; // pixels
+        // Update person bounding box
+        if (personDetection.boundingBox) {
+          const normalizedBox = {
+            x: (personDetection.boundingBox.x / 320) * 100,
+            y: (personDetection.boundingBox.y / 240) * 100,
+            w: (personDetection.boundingBox.width / 320) * 100,
+            h: (personDetection.boundingBox.height / 240) * 100
+          };
+          setBoundingBox(normalizedBox);
+          setPersonBoundingBox(personDetection.boundingBox);
+        }
         
-        const isLookingAtCamera = Math.abs(faceCenterX - frameCenterX) < eyeContactThreshold;
+        // Check for multiple people using square detection
+        if (personDetection.multiplePeopleDetected && recording) {
+          handlePersonViolation();
+        }
         
-        if (isLookingAtCamera) {
-          consecutiveLowEyeContactFrames = 0;
-          setEyeContactScore(prev => Math.min(100, prev + 2));
-        } else {
-          consecutiveLowEyeContactFrames++;
-          setEyeContactScore(prev => Math.max(0, prev - 1));
+        // EYE TRACKING SYSTEM
+        if (personDetection.boundingBox && recording) {
+          const eyeTracking = trackEyeMovement(frame, personDetection.boundingBox);
           
-          // Add warning for poor eye contact
-          if (consecutiveLowEyeContactFrames > 30 && recording) { // ~4.5 seconds
-            addWarning('eye_contact', '⚠️ Please maintain eye contact with the camera');
-            consecutiveLowEyeContactFrames = 0;
+          if (eyeTracking.valid) {
+            setEyeTrackingData(eyeTracking);
+            
+            // Check for excessive eye movement
+            const movementThreshold = 500; // Accumulated movement threshold
+            if (eyeTracking.movement > movementThreshold) {
+              handleEyeViolation();
+              resetEyeMovementAccumulator(); // Reset after violation
+            }
+            
+            // Update eye contact score based on stability
+            const movementStability = Math.max(0, 100 - (eyeTracking.movement / 10));
+            setEyeContactScore(movementStability);
           }
         }
+        
       } else {
-        consecutiveNoPersonFrames++;
         setPersonDetected(false);
         setBoundingBox(null);
+        setPersonBoundingBox({ x: 0, y: 0, width: 0, height: 0 });
         
-        // Add warning for no person detected
-        if (consecutiveNoPersonFrames > 20 && recording) { // ~3 seconds
+        // Warning for no person detected
+        if (frameCount % 60 === 0 && recording) { // Check every ~9 seconds
           addWarning('no_person', '⚠️ No person detected in camera view');
-          consecutiveNoPersonFrames = 0;
         }
-      }
-
-      // Multiple person detection (enhanced)
-      let curL = 0, curR = 0;
-      for (let i = 0; i < frame.length; i += 4) {
-        const x = (i/4) % 320;
-        const r = frame[i];
-        const g = frame[i+1];
-        const b = frame[i+2];
-        
-        const isSkin = (r > 95 && g > 40 && b > 20 && r > g && r > b);
-        
-        if (isSkin) {
-          if (x < 100) curL++;
-          else if (x > 220) curR++;
-        }
-      }
-
-      const lDelta = Math.abs(curL - prevMassesRef.current.l);
-      const rDelta = Math.abs(curR - prevMassesRef.current.r);
-      const isMultiplePeople = (curL > 2000) || (curR > 2000) || (lDelta > 1500) || (rDelta > 1500);
-
-      if (isMultiplePeople) {
-        setPersonCount(2);
-        if (recording) {
-          addWarning('multiple_people', '👥 Multiple people detected. Please ensure you are alone.');
-        }
-      } else {
-        setPersonCount(1);
       }
       
-      prevMassesRef.current = { l: curL, r: curR };
-    }, 150); 
+      // Update biometric status based on warnings
+      if (personWarningCount >= 2 || eyeWarningCount >= 4) {
+        setBiometricStatus('warning');
+      } else if (personWarningCount === 0 && eyeWarningCount === 0) {
+        setBiometricStatus('active');
+      }
+      
+    }, 150); // Monitor every 150ms
 
     return () => clearInterval(interval);
     // eslint-disable-next-line
@@ -407,18 +546,18 @@ export default function AIInterview({ userData, onBack, onComplete }) {
 
   if (setupPhase) {
     return (
-      <div style={{ minHeight:'100vh', background:'linear-gradient(135deg,#0a0a0c,#1a1a1c)', color:'white', display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}>
-        <div style={{ maxWidth:'600px', width:'100%', background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.1)', padding:'40px', borderRadius:'30px', textAlign:'center' }}>
+      <div style={{ minHeight:'100vh', background:currentTheme.pageBg, color:currentTheme.textPrimary, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}>
+        <div style={{ maxWidth:'600px', width:'100%', background:currentTheme.cardBg, border:`1px solid ${currentTheme.border}`, padding:'40px', borderRadius:'30px', textAlign:'center' }}>
           <div style={{ fontSize:'50px', marginBottom:'10px' }}>🎥</div>
           <h2 style={{ fontSize:'28px', fontWeight:'900', marginBottom:'15px' }}>Mock Interview Studio</h2>
-          <p style={{ color:'rgba(255,255,255,0.6)', marginBottom:'30px' }}>Select your target field for a precise AI evaluation.</p>
+          <p style={{ color:currentTheme.textMuted, marginBottom:'30px' }}>Select your target field for a precise AI evaluation.</p>
           
           <div style={{ display:'grid', gridTemplateColumns:'repeat(2, 1fr)', gap:'10px', marginBottom:'25px' }}>
             {PREDEFINED_FIELDS.map(f => (
               <button 
                 key={f}
                 onClick={() => setSelectedField(f)}
-                style={{ padding:'12px', borderRadius:'12px', background: selectedField === f ? '#FF6B35' : 'rgba(255,255,255,0.05)', border:'1px solid ' + (selectedField === f ? '#FF6B35' : 'rgba(255,255,255,0.1)'), color: selectedField === f ? 'white' : 'rgba(255,255,255,0.8)', cursor:'pointer', fontSize:'13px', fontWeight:'bold', transition:'all 0.2s' }}
+                style={{ padding:'12px', borderRadius:'12px', background: selectedField === f ? currentTheme.accent : currentTheme.inputBg, border:'1px solid ' + (selectedField === f ? currentTheme.accent : currentTheme.border), color: selectedField === f ? 'white' : currentTheme.textPrimary, cursor:'pointer', fontSize:'13px', fontWeight:'bold', transition:'all 0.2s' }}
               >
                 {f}
               </button>
@@ -431,14 +570,14 @@ export default function AIInterview({ userData, onBack, onComplete }) {
               placeholder="Enter your field (e.g. DevOps Engineer)" 
               value={customField}
               onChange={(e) => setCustomField(e.target.value)}
-              style={{ width:'100%', padding:'15px', borderRadius:'15px', background:'rgba(0,0,0,0.3)', border:'1px solid ' + (isFieldValid ? 'rgba(255,107,53,0.3)' : '#E74C3C'), color:'white', marginBottom:'20px', outline:'none' }}
+              style={{ width:'100%', padding:'15px', borderRadius:'15px', background:currentTheme.inputBg, border:`1px solid ${isFieldValid ? currentTheme.border : currentTheme.error}`, color:currentTheme.textPrimary, marginBottom:'20px', outline:'none' }}
             />
           )}
 
           <button 
             onClick={generateQuestions}
             disabled={!isFieldValid || analyzing}
-            style={{ width:'100%', padding:'18px', borderRadius:'15px', background: isFieldValid ? '#FF6B35' : 'rgba(255,255,255,0.1)', color:'white', border:'none', fontWeight:'bold', cursor: isFieldValid ? 'pointer' : 'not-allowed' }}
+            style={{ width:'100%', padding:'18px', borderRadius:'15px', background: isFieldValid ? currentTheme.accent : currentTheme.inputBg, color:currentTheme.textPrimary, border:'none', fontWeight:'bold', cursor: isFieldValid ? 'pointer' : 'not-allowed' }}
           >
             {analyzing ? 'Initializing AI...' : 'Start Proctored Session ⚡'}
           </button>
@@ -448,18 +587,18 @@ export default function AIInterview({ userData, onBack, onComplete }) {
   }
 
   return (
-    <div style={{ minHeight:'100vh', background:'#0a0a0c', color:'white', padding:'40px 20px', fontFamily:'Arial, sans-serif' }}>
+    <div style={{ minHeight:'100vh', background:currentTheme.pageBg, color:currentTheme.textPrimary, padding:'40px 20px', fontFamily:'Arial, sans-serif' }}>
       
       <div style={{ display:'flex', alignItems:'center', gap:'16px', maxWidth:'1000px', margin:'0 auto 30px' }}>
-        <button onClick={handleBack} style={{ background:'transparent', color:'rgba(255,255,255,0.6)', border:'1px solid rgba(255,255,255,0.2)', padding:'8px 18px', borderRadius:'20px', cursor:'pointer' }}>← Back</button>
-        <h1 style={{ color:'#FF6B35', fontSize:'22px', fontWeight:'bold', margin:0 }}>🎥 AI Mock Interview Studio</h1>
+        <button onClick={handleBack} style={{ background:'transparent', color:currentTheme.textMuted, border:`1px solid ${currentTheme.border}`, padding:'8px 18px', borderRadius:'20px', cursor:'pointer' }}>← Back</button>
+        <h1 style={{ color:currentTheme.accent, fontSize:'22px', fontWeight:'bold', margin:0 }}>🎥 AI Mock Interview Studio</h1>
       </div>
 
       {securityViolation && (
-        <div style={{ maxWidth:'1000px', margin:'0 auto 30px', background:'rgba(231,76,60,0.15)', border:'2px solid #E74C3C', borderRadius:'16px', padding:'20px', textAlign:'center', color:'#E74C3C' }}>
+        <div style={{ maxWidth:'1000px', margin:'0 auto 30px', background:currentTheme.error + '26', border:'2px solid ' + currentTheme.error, borderRadius:'16px', padding:'20px', textAlign:'center', color:currentTheme.error }}>
           <div style={{ fontSize:'24px', fontWeight:'bold' }}>⚠️ SECURITY TERMINATION</div>
           <p>{securityViolation}</p>
-          <button onClick={() => window.location.reload()} style={{ marginTop:'15px', background:'#E74C3C', color:'white', border:'none', padding:'8px 20px', borderRadius:'12px', cursor:'pointer' }}>Restart Session</button>
+          <button onClick={() => window.location.reload()} style={{ marginTop:'15px', background:currentTheme.error, color:'white', border:'none', padding:'8px 20px', borderRadius:'12px', cursor:'pointer' }}>Restart Session</button>
         </div>
       )}
 
@@ -467,33 +606,71 @@ export default function AIInterview({ userData, onBack, onComplete }) {
         
         <div style={{ display:'flex', flexDirection:'column', gap:'20px' }}>
           {!results && (
-            <div style={{ background:'rgba(255,107,53,0.1)', border:'1px solid rgba(255,107,53,0.3)', padding:'25px', borderRadius:'20px', animation:'fadeIn 0.5s ease' }}>
+            <div style={{ background:currentTheme.inputBg, border:`1px solid ${currentTheme.accent}`, padding:'25px', borderRadius:'20px', animation:'fadeIn 0.5s ease' }}>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'12px' }}>
-                <div style={{ fontSize:'12px', color:'#FF6B35', fontWeight:'800' }}>QUESTION {currentQIndex + 1} OF {questions.length}</div>
-                {recording && <div style={{ fontSize:'14px', fontWeight:'900', color:'#E74C3C' }}>⏱️ {timer}s</div>}
+                <div style={{ fontSize:'12px', color:currentTheme.accent, fontWeight:'800' }}>QUESTION {currentQIndex + 1} OF {questions.length}</div>
+                <div style={{ display:'flex', gap:'15px', alignItems:'center' }}>
+                  {recording && <div style={{ fontSize:'14px', fontWeight:'900', color:currentTheme.error }}>⏱️ {timer}s</div>}
+                  
+                  {/* Biometric Protection Indicators */}
+                  <div style={{ display:'flex', gap:'8px', alignItems:'center' }}>
+                    <div style={{ 
+                      fontSize:'11px', 
+                      fontWeight:'900', 
+                      padding:'4px 8px',
+                      borderRadius:'6px',
+                      background: biometricStatus === 'terminated' ? currentTheme.error : biometricStatus === 'warning' ? currentTheme.warning : currentTheme.success,
+                      color: 'white'
+                    }}>
+                      {biometricStatus === 'terminated' ? '🔒 BIOMETRIC LOCK' : biometricStatus === 'warning' ? '⚠️ BIOMETRIC WARNING' : '✅ BIOMETRIC ACTIVE'}
+                    </div>
+                    
+                    <div style={{ 
+                      fontSize:'11px', 
+                      fontWeight:'900', 
+                      color: personWarningCount >= 2 ? currentTheme.error : personWarningCount >= 1 ? currentTheme.warning : currentTheme.accent,
+                      padding:'4px 6px',
+                      borderRadius:'4px',
+                      background: currentTheme.inputBg
+                    }}>
+                      👥 PERSON: {personWarningCount}/{MAX_PERSON_WARNINGS}
+                    </div>
+                    
+                    <div style={{ 
+                      fontSize:'11px', 
+                      fontWeight:'900', 
+                      color: eyeWarningCount >= 4 ? currentTheme.error : eyeWarningCount >= 2 ? currentTheme.warning : currentTheme.accent,
+                      padding:'4px 6px',
+                      borderRadius:'4px',
+                      background: currentTheme.inputBg
+                    }}>
+                      👁️ EYES: {eyeWarningCount}/{MAX_EYE_WARNINGS}
+                    </div>
+                  </div>
+                </div>
               </div>
               <div style={{ fontSize:'20px', fontWeight:'700', lineHeight:'1.5' }}>{questions[currentQIndex]}</div>
             </div>
           )}
 
-          <div style={{ position:'relative', borderRadius:'24px', overflow:'hidden', background:'#000', border:'1px solid rgba(255,255,255,0.1)' }}>
+          <div style={{ position:'relative', borderRadius:'24px', overflow:'hidden', background:'#000', border:`1px solid ${currentTheme.border}` }}>
             {!recorded ? (
               <>
                 <video ref={videoRef} autoPlay muted playsInline style={{ width:'100%', display:'block', filter: securityViolation ? 'blur(10px) grayscale(1)' : 'none' }} />
                 {boundingBox && !securityViolation && (
                   <div style={{ 
                     position:'absolute', 
-                    border:'2px solid ' + (personCount > 1 ? '#E74C3C' : '#FF6B35'), 
+                    border:`2px solid ${personCount > 1 ? currentTheme.error : currentTheme.accent}`, 
                     left: `${boundingBox.x}%`, 
                     top: `${boundingBox.y}%`, 
                     width: `${boundingBox.w}%`, 
                     height: `${boundingBox.h}%`, 
                     transition: 'all 0.15s ease-out',
-                    boxShadow: '0 0 15px ' + (personCount > 1 ? 'rgba(231,76,60,0.5)' : 'rgba(255,107,53,0.3)'),
+                    boxShadow: `0 0 15px ${personCount > 1 ? currentTheme.error + '80' : currentTheme.accent + '80'}`,
                     borderRadius: '8px',
                     pointerEvents: 'none'
                   }}>
-                    <div style={{ position:'absolute', top:'-25px', left:0, background: personCount > 1 ? '#E74C3C' : '#FF6B35', color:'white', fontSize:'10px', padding:'2px 8px', borderRadius:'4px', fontWeight:'bold', whiteSpace:'nowrap' }}>
+                    <div style={{ position:'absolute', top:'-25px', left:0, background: personCount > 1 ? currentTheme.error : currentTheme.accent, color:'white', fontSize:'10px', padding:'2px 8px', borderRadius:'4px', fontWeight:'bold', whiteSpace:'nowrap' }}>
                       {personCount > 1 ? '⚠️ MULTIPLE ENTITIES' : '🎯 TARGET LOCKED'}
                     </div>
                   </div>
@@ -504,9 +681,9 @@ export default function AIInterview({ userData, onBack, onComplete }) {
             )}
 
             {recording && currentTranscript && (
-              <div style={{ position:'absolute', bottom:20, left:20, right:20, background:'rgba(0,0,0,0.8)', padding:'15px', borderRadius:'15px', border:'1px solid rgba(255,255,255,0.1)', backdropFilter:'blur(10px)' }}>
-                <div style={{ fontSize:'10px', color:'#FF6B35', fontWeight:'800', marginBottom:'5px' }}>LIVE SPEECH CAPTURE</div>
-                <div style={{ fontSize:'13px', color:'white', fontStyle:'italic' }}>"...{currentTranscript.slice(-120)}"</div>
+              <div style={{ position:'absolute', bottom:20, left:20, right:20, background:currentTheme.pageBg, padding:'15px', borderRadius:'15px', border:`1px solid ${currentTheme.border}`, backdropFilter:'blur(10px)' }}>
+                <div style={{ fontSize:'10px', color:currentTheme.accent, fontWeight:'800', marginBottom:'5px' }}>LIVE SPEECH CAPTURE</div>
+                <div style={{ fontSize:'13px', color:currentTheme.textPrimary, fontStyle:'italic' }}>"...{currentTranscript.slice(-120)}"</div>
               </div>
             )}
 
@@ -514,33 +691,33 @@ export default function AIInterview({ userData, onBack, onComplete }) {
               <div style={{ position:'absolute', top:20, left:20, display:'flex', flexDirection:'column', gap:'8px' }}>
                 <div style={{ display:'flex', gap:'8px', flexWrap:'wrap' }}>
                   <div style={{ 
-                    background: personDetected ? 'rgba(46,204,113,0.6)' : 'rgba(231,76,60,0.6)', 
+                    background: personDetected ? currentTheme.success : currentTheme.error, 
                     padding:'6px 12px', 
                     borderRadius:'10px', 
                     fontSize:'11px', 
-                    border:'1px solid rgba(255,255,255,0.2)', 
+                    border:`1px solid ${currentTheme.border}`, 
                     backdropFilter:'blur(5px)',
                     fontWeight: 'bold'
                   }}>
                     👤 {personDetected ? 'PERSON DETECTED' : 'NO PERSON'}
                   </div>
                   <div style={{ 
-                    background: eyeContactScore > 70 ? 'rgba(46,204,113,0.6)' : eyeContactScore > 40 ? 'rgba(243,156,18,0.6)' : 'rgba(231,76,60,0.6)', 
+                    background: eyeContactScore > 70 ? currentTheme.success : eyeContactScore > 40 ? currentTheme.warning : currentTheme.error, 
                     padding:'6px 12px', 
                     borderRadius:'10px', 
                     fontSize:'11px', 
-                    border:'1px solid rgba(255,255,255,0.2)', 
+                    border:`1px solid ${currentTheme.border}`, 
                     backdropFilter:'blur(5px)',
                     fontWeight: 'bold'
                   }}>
                     �️ EYE: {eyeContactScore}%
                   </div>
                   <div style={{ 
-                    background: noiseLevel > 65 ? 'rgba(231,76,60,0.6)' : 'rgba(46,204,113,0.6)', 
+                    background: noiseLevel > 65 ? currentTheme.error : currentTheme.success, 
                     padding:'6px 12px', 
                     borderRadius:'10px', 
                     fontSize:'11px', 
-                    border:'1px solid rgba(255,255,255,0.2)', 
+                    border:`1px solid ${currentTheme.border}`, 
                     backdropFilter:'blur(5px)',
                     fontWeight: 'bold'
                   }}>
@@ -551,11 +728,11 @@ export default function AIInterview({ userData, onBack, onComplete }) {
                 {/* Warning Counter */}
                 {warnings.length > 0 && (
                   <div style={{ 
-                    background: 'rgba(231,76,60,0.8)', 
+                    background: currentTheme.error, 
                     padding:'6px 12px', 
                     borderRadius:'10px', 
                     fontSize:'11px', 
-                    border:'1px solid #E74C3C', 
+                    border:`1px solid ${currentTheme.error}`, 
                     backdropFilter:'blur(5px)',
                     fontWeight: 'bold',
                     animation: 'pulse 2s infinite'
@@ -581,16 +758,16 @@ export default function AIInterview({ userData, onBack, onComplete }) {
                   <div
                     key={warning.id}
                     style={{
-                      background: 'rgba(231,76,60,0.9)',
-                      border: '1px solid #E74C3C',
+                      background: currentTheme.error,
+                      border: `1px solid ${currentTheme.error}`,
                       borderRadius: '12px',
                       padding: '12px',
                       fontSize: '12px',
                       fontWeight: '600',
-                      color: 'white',
+                      color: '#FFFFFF',
                       backdropFilter: 'blur(10px)',
                       animation: 'slideInRight 0.3s ease-out',
-                      boxShadow: '0 4px 15px rgba(231,76,60,0.3)'
+                      boxShadow: `0 4px 15px ${currentTheme.error}4d`
                     }}
                   >
                     {warning.message}
@@ -601,35 +778,35 @@ export default function AIInterview({ userData, onBack, onComplete }) {
           </div>
 
           {!recording && !recorded && !securityViolation && (
-            <button onClick={startRecording} style={{ width:'100%', padding:'18px', borderRadius:'15px', background:'#FF6B35', color:'white', border:'none', fontWeight:'bold', fontSize:'16px', cursor:'pointer' }}>Start Interview</button>
+            <button onClick={startRecording} style={{ width:'100%', padding:'18px', borderRadius:'15px', background:currentTheme.accent, color:'#FFFFFF', border:'none', fontWeight:'bold', fontSize:'16px', cursor:'pointer' }}>Start Interview</button>
           )}
           {recording && (
-             <button onClick={nextQuestion} style={{ width:'100%', padding:'18px', borderRadius:'15px', background:'#3498DB', color:'white', border:'none', fontWeight:'bold', fontSize:'16px', cursor:'pointer' }}>
+             <button onClick={nextQuestion} style={{ width:'100%', padding:'18px', borderRadius:'15px', background:currentTheme.accentLight, color:'#FFFFFF', border:'none', fontWeight:'bold', fontSize:'16px', cursor:'pointer' }}>
                {currentQIndex === questions.length - 1 ? 'Finish Interview' : 'Next Question'}
              </button>
           )}
           {recorded && !results && !analyzing && (
-            <button onClick={analyzeInterview} style={{ width:'100%', padding:'18px', borderRadius:'15px', background:'#2ECC71', color:'white', border:'none', fontWeight:'bold', fontSize:'16px', cursor:'pointer' }}>Generate AI Scorecard</button>
+            <button onClick={analyzeInterview} style={{ width:'100%', padding:'18px', borderRadius:'15px', background:currentTheme.success, color:'#FFFFFF', border:'none', fontWeight:'bold', fontSize:'16px', cursor:'pointer' }}>Generate AI Scorecard</button>
           )}
           {analyzing && (
-            <div style={{ textAlign:'center', padding:'30px', background:'rgba(255,255,255,0.03)', borderRadius:'24px' }}>
+            <div style={{ textAlign:'center', padding:'30px', background:currentTheme.inputBg, borderRadius:'24px' }}>
               <div style={{ fontSize:'40px', marginBottom:'15px' }}>🧠</div>
-              <div style={{ fontWeight:'bold', color:'#3498DB' }}>GEMINI AI IS PERFORMING TECHNICAL AUDIT...</div>
+              <div style={{ fontWeight:'bold', color:currentTheme.accentLight }}>GEMINI AI IS PERFORMING TECHNICAL AUDIT...</div>
             </div>
           )}
         </div>
 
         {results && (
-          <div style={{ background:'rgba(255,255,255,0.03)', borderRadius:'24px', padding:'35px', border:'1px solid #2ECC71', animation:'fadeIn 0.5s ease' }}>
+          <div style={{ background:currentTheme.cardBg, borderRadius:'24px', padding:'35px', border:`1px solid ${currentTheme.success}`, animation:'fadeIn 0.5s ease' }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'25px' }}>
               <h3 style={{ fontSize:'24px', fontWeight:'900' }}>AI Technical Scorecard</h3>
-              <div style={{ fontSize:'32px', fontWeight:'900', color: results.rating > 5 ? '#2ECC71' : '#E74C3C' }}>{results.rating}/10</div>
+              <div style={{ fontSize:'32px', fontWeight:'900', color: results.rating > 5 ? currentTheme.success : currentTheme.error }}>{results.rating}/10</div>
             </div>
             <div style={{ marginBottom:'30px' }}>
-              <div style={{ fontSize:'11px', color:'#FF6B35', fontWeight:'900', textTransform:'uppercase', marginBottom:'10px' }}>Detailed Technical Audit</div>
-              <p style={{ fontSize:'14px', lineHeight:'1.7', color:'rgba(255,255,255,0.8)', background:'rgba(255,107,53,0.05)', padding:'20px', borderRadius:'15px', borderLeft:'4px solid #FF6B35' }}>{results.detailedJudgement}</p>
+              <div style={{ fontSize:'11px', color:currentTheme.accent, fontWeight:'900', textTransform:'uppercase', marginBottom:'10px' }}>Detailed Technical Audit</div>
+              <p style={{ fontSize:'14px', lineHeight:'1.7', color:currentTheme.textPrimary, background:currentTheme.inputBg, padding:'20px', borderRadius:'15px', borderLeft:`4px solid ${currentTheme.accent}` }}>{results.detailedJudgement}</p>
             </div>
-            <button onClick={handleBack} style={{ width:'100%', marginTop:'35px', padding:'18px', borderRadius:'15px', background:'rgba(255,255,255,0.1)', color:'white', border:'none', fontWeight:'bold', cursor:'pointer' }}>Return to Dashboard</button>
+            <button onClick={handleBack} style={{ width:'100%', marginTop:'35px', padding:'18px', borderRadius:'15px', background:currentTheme.inputBg, color:currentTheme.textPrimary, border:'none', fontWeight:'bold', cursor:'pointer' }}>Return to Dashboard</button>
           </div>
         )}
       </div>

@@ -16,7 +16,6 @@ import CommunityFeed from './CommunityFeed';
 import RewardHub from './RewardHub';
 import IndustryDashboard from './IndustryDashboard';
 import Certifications from './Certifications';
-import AIResumeBuilder from './AIResumeBuilder';
 import AIInterview from './AIInterview';
 import CustomCursor from './components/CustomCursor';
 import ParticleBackground from './components/ParticleBackground';
@@ -28,8 +27,39 @@ const getProfileStorageKey = (uid) => `pathforge_user_profile_${uid}`;
 
 const VALID_APP_PAGES = new Set([
   'home', 'dashboard', 'onboarding', 'quiz', 'geo', 'skillmap', 'score', 'learning',
-  'mentoring', 'resume', 'community', 'profile', 'rewards', 'interview', 'industry', 'audit', 'certifications', 'resume-builder',
+  'mentoring', 'resume', 'community', 'profile', 'rewards', 'interview', 'industry', 'certifications', 'audit'
 ]);
+
+const theme = {
+  dark: {
+    pageBg: '#1D2226',
+    cardBg: '#1B1F23',
+    inputBg: '#283039',
+    border: '#38434F',
+    textPrimary: '#E7E9EA',
+    textMuted: '#B0B7BF',
+    accent: '#0A66C2',
+    accentHover: '#004182',
+    accentLight: '#70B5F9',
+    success: '#057642',
+    warning: '#F5C518',
+    error: '#CC1016',
+  },
+  light: {
+    pageBg: '#F3F2EF',
+    cardBg: '#FFFFFF',
+    inputBg: '#F9F9F9',
+    border: '#D0D0D0',
+    textPrimary: '#000000',
+    textMuted: '#666666',
+    accent: '#0A66C2',
+    accentHover: '#004182',
+    accentLight: '#0A66C2',
+    success: '#057642',
+    warning: '#B06B00',
+    error: '#CC1016',
+  }
+};
 
 function App() {
   const [user, setUser] = useState(null);
@@ -43,7 +73,16 @@ function App() {
   const [dataLoaded, setDataLoaded] = useState(false);
   const [auditLoading, setAuditLoading] = useState(false);
   const [auditResult, setAuditResult] = useState(null);
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('PATHFORGE_THEME');
+    return saved ? saved === 'dark' : true;
+  });
   const hasProfile = Boolean(userData?.skill);
+
+  // Save theme preference to localStorage
+  useEffect(() => {
+    localStorage.setItem('PATHFORGE_THEME', darkMode ? 'dark' : 'light');
+  }, [darkMode]);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (u) => {
@@ -131,7 +170,7 @@ function App() {
 
   if (authLoading) {
     return (
-      <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '20px', position: 'relative', overflow: 'hidden' }}>
+      <div style={{ minHeight: '100vh', background: theme.pageBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '20px', position: 'relative', overflow: 'hidden' }}>
         <ParticleBackground />
         <CustomCursor />
         <div style={{ zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
@@ -139,7 +178,7 @@ function App() {
           <div className="pf-shimmer-text" style={{ fontFamily: 'var(--font-display)', fontSize: '28px', fontWeight: '800' }}>PathForge</div>
           <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px', letterSpacing: '2px', textTransform: 'uppercase' }}>Loading your journey...</div>
           <div style={{ width: '160px', height: '3px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px', overflow: 'hidden', marginTop: '8px' }}>
-            <div style={{ height: '100%', background: 'linear-gradient(90deg, #FF6B35, #FF9A6C)', borderRadius: '2px', animation: 'shimmerText 1.5s linear infinite', backgroundSize: '200% auto' }} />
+            <div style={{ height: '100%', background: 'linear-gradient(90deg, #0A66C2, #FF9A6C)', borderRadius: '2px', animation: 'shimmerText 1.5s linear infinite', backgroundSize: '200% auto' }} />
           </div>
         </div>
       </div>
@@ -177,24 +216,24 @@ function App() {
 
   if (page === 'onboarding') return <SubPageWrapper><OnboardingQuiz onBack={goBack} onComplete={async (data) => { const merged = { ...userData, ...data }; await persistUserData(merged); setPage('dashboard'); }} /></SubPageWrapper>;
   if (page === 'quiz') return <SubPageWrapper><Quiz onComplete={async (data) => { const merged = { ...userData, ...data }; await persistUserData(merged); setPage('dashboard'); }} /></SubPageWrapper>;
-  if (page === 'geo') return <SubPageWrapper><GeoCompany userData={userData} onBack={goBack} onNext={() => navigateTo('skillmap')} onProgressUpdate={handleProgressUpdate} /></SubPageWrapper>;
-  if (page === 'skillmap') return <SubPageWrapper><SkillMap userData={userData} onBack={goBack} onNext={() => navigateTo('score')} /></SubPageWrapper>;
-  if (page === 'score') return <SubPageWrapper><EmployabilityScore userData={userData} onBack={goBack} onNext={() => navigateTo('learning')} onProgressUpdate={handleProgressUpdate} /></SubPageWrapper>;
-  if (page === 'learning') return <SubPageWrapper><AILearningPath userData={userData} onBack={goBack} onNext={() => navigateTo('score')} onProgressUpdate={handleProgressUpdate} /></SubPageWrapper>;
-  if (page === 'mentoring') return <SubPageWrapper><BiasMentoring userData={userData} onBack={goBack} /></SubPageWrapper>;
-  if (page === 'resume') return <SubPageWrapper><ATSResume userData={{ ...userData, email: user.email, phone: user.phoneNumber }} onBack={goBack} /></SubPageWrapper>;
-  if (page === 'community') return <SubPageWrapper><CommunityFeed user={user} userData={userData} onBack={goBack} onGoToProfile={() => navigateTo('profile')} /></SubPageWrapper>;
-  if (page === 'profile') return <SubPageWrapper><ProfilePage user={user} userData={userData} onBack={goBack} persistUserData={persistUserData} handleLogout={handleLogout} /></SubPageWrapper>;
-  if (page === 'rewards') return <SubPageWrapper><RewardHub userData={userData} onBack={goBack} /></SubPageWrapper>;
-  if (page === 'interview') return <SubPageWrapper><AIInterview userData={userData} onBack={goBack} /></SubPageWrapper>;
-  if (page === 'industry') return <SubPageWrapper><IndustryDashboard onBack={goBack} /></SubPageWrapper>;
-  if (page === 'certifications') return <SubPageWrapper><Certifications userData={userData} onBack={goBack} onProgressUpdate={handleProgressUpdate} /></SubPageWrapper>;
-  if (page === 'resume-builder') return <SubPageWrapper><AIResumeBuilder userData={userData} onBack={goBack} onProgressUpdate={handleProgressUpdate} /></SubPageWrapper>;
+  if (page === 'geo') return <SubPageWrapper><GeoCompany userData={userData} onBack={goBack} onNext={() => navigateTo('skillmap')} onProgressUpdate={handleProgressUpdate} theme={darkMode ? theme.dark : theme.light} /></SubPageWrapper>;
+  if (page === 'skillmap') return <SubPageWrapper><SkillMap userData={userData} onBack={goBack} onNext={() => navigateTo('score')} theme={darkMode ? theme.dark : theme.light} /></SubPageWrapper>;
+  if (page === 'score') return <SubPageWrapper><EmployabilityScore userData={userData} onBack={goBack} onNext={() => navigateTo('learning')} onProgressUpdate={handleProgressUpdate} theme={darkMode ? theme.dark : theme.light} /></SubPageWrapper>;
+  if (page === 'learning') return <SubPageWrapper><AILearningPath userData={userData} onBack={goBack} onNext={() => navigateTo('score')} onProgressUpdate={handleProgressUpdate} theme={darkMode ? theme.dark : theme.light} /></SubPageWrapper>;
+  if (page === 'mentoring') return <SubPageWrapper><BiasMentoring userData={userData} onBack={goBack} theme={darkMode ? theme.dark : theme.light} /></SubPageWrapper>;
+  if (page === 'resume') return <SubPageWrapper><ATSResume userData={{ ...userData, email: user.email, phone: user.phoneNumber }} onBack={goBack} theme={darkMode ? theme.dark : theme.light} /></SubPageWrapper>;
+  if (page === 'community') return <SubPageWrapper><CommunityFeed user={user} userData={userData} onBack={goBack} onGoToProfile={() => navigateTo('profile')} theme={darkMode ? theme.dark : theme.light} /></SubPageWrapper>;
+  if (page === 'profile') return <SubPageWrapper><ProfilePage user={user} userData={userData} onBack={goBack} persistUserData={persistUserData} handleLogout={handleLogout} theme={darkMode ? theme.dark : theme.light} /></SubPageWrapper>;
+  if (page === 'rewards') return <SubPageWrapper><RewardHub userData={userData} onBack={goBack} theme={darkMode ? theme.dark : theme.light} /></SubPageWrapper>;
+  if (page === 'interview') return <SubPageWrapper><AIInterview userData={userData} onBack={goBack} theme={darkMode ? theme.dark : theme.light} /></SubPageWrapper>;
+  if (page === 'industry') return <SubPageWrapper><IndustryDashboard onBack={goBack} theme={darkMode ? theme.dark : theme.light} /></SubPageWrapper>;
+  if (page === 'certifications') return <SubPageWrapper><Certifications userData={userData} onBack={goBack} onProgressUpdate={handleProgressUpdate} theme={darkMode ? theme.dark : theme.light} /></SubPageWrapper>;
   if (page === 'audit') {
     return (
       <SubPageWrapper>
         <ProjectAuditor 
           onBack={goBack} 
+          theme={darkMode ? theme.dark : theme.light}
           onComplete={async (results) => {
             const skipIdx = (results.skipToWeek || 1) - 1;
             const currentModules = userData?.learningProgress?.modules || {};
@@ -262,14 +301,13 @@ function App() {
               { id: 'audit', label: 'Project Audit', icon: '🛡️' },
               { id: 'geo', label: 'Company Search', icon: '📍' },
               { id: 'resume', label: 'ATS Resume', icon: '📄' },
-              { id: 'resume-builder', label: 'AI Resume Builder', icon: '🤖' },
               { id: 'community', label: 'Community', icon: '🌐' },
               { id: 'skillmap', label: 'Skill DNA', icon: '🧬' },
               { id: 'certifications', label: 'Certifications', icon: '🎓' },
               { id: 'rewards', label: 'Reward Hub', icon: '🏆' },
               { id: 'profile', label: 'Settings', icon: '⚙️' },
             ].map(item => (
-              <button key={item.id} onClick={() => navigateTo(item.id)} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 18px', borderRadius: '14px', border: 'none', background: page === item.id ? 'rgba(255,107,53,0.15)' : 'transparent', color: page === item.id ? '#FF6B35' : 'rgba(255,255,255,0.6)', cursor: 'pointer', fontSize: '14px', fontWeight: '700', transition: 'all 0.2s', textAlign: 'left', width: '100%' }}
+              <button key={item.id} onClick={() => navigateTo(item.id)} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 18px', borderRadius: '14px', border: 'none', background: page === item.id ? 'rgba(255,107,53,0.15)' : 'transparent', color: page === item.id ? '#0A66C2' : 'rgba(255,255,255,0.6)', cursor: 'pointer', fontSize: '14px', fontWeight: '700', transition: 'all 0.2s', textAlign: 'left', width: '100%' }}
                 onMouseEnter={e => { if (page !== item.id) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
                 onMouseLeave={e => { if (page !== item.id) e.currentTarget.style.background = 'transparent'; }}>
                 <span>{item.icon}</span> {item.label}
@@ -306,17 +344,17 @@ function App() {
                 <span style={{ fontSize: '24px' }}>📈</span>
               </div>
               <div style={{ fontSize: '36px', fontWeight: '900', color: 'white', marginBottom: '8px' }}>{lpct}%</div>
-              <div style={{ fontSize: '13px', color: '#FF6B35', fontWeight: '700' }}>{ldone}/{ltotal} modules verified</div>
+              <div style={{ fontSize: '13px', color: '#0A66C2', fontWeight: '700' }}>{ldone}/{ltotal} modules verified</div>
             </div>
 
             {/* AI Auditor Widget */}
             <div style={{ background: 'linear-gradient(135deg, rgba(255,107,53,0.1) 0%, rgba(255,255,255,0.03) 100%)', border: '1px solid rgba(255,107,53,0.4)', borderRadius: '24px', padding: '32px', backdropFilter: 'blur(15px)', position: 'relative' }}>
-              <div style={{ fontSize: '11px', fontWeight: '800', color: '#FF6B35', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>AI Industry Audit</div>
+              <div style={{ fontSize: '11px', fontWeight: '800', color: '#0A66C2', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>AI Industry Audit</div>
               <div style={{ fontSize: '20px', fontWeight: '800', marginBottom: '12px', color: 'white' }}>Industry Readiness <br/>Status</div>
               <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', marginBottom: '20px', lineHeight: '1.5' }}>Scan your progress against live market trends.</p>
               <button 
                 onClick={() => navigateTo('audit')}
-                style={{ width: '100%', padding: '12px', borderRadius: '14px', background: '#FF6B35', color: 'white', border: 'none', fontSize: '14px', fontWeight: '800', cursor: 'pointer', boxShadow: '0 8px 20px rgba(255,107,53,0.2)' }}
+                style={{ width: '100%', padding: '12px', borderRadius: '14px', background: '#0A66C2', color: 'white', border: 'none', fontSize: '14px', fontWeight: '800', cursor: 'pointer', boxShadow: '0 8px 20px rgba(255,107,53,0.2)' }}
               >
                 Start AI Audit ⚡
               </button>
@@ -345,13 +383,13 @@ function App() {
                     setAuditLoading(false);
                     if (result) setAuditResult(result);
                   }}
-                  style={{ background: 'rgba(255,107,53,0.1)', border: '1px solid rgba(255,107,53,0.3)', color: '#FF6B35', padding: '10px 20px', borderRadius: '14px', fontSize: '13px', fontWeight: '800', cursor: 'pointer' }}>
+                  style={{ background: 'rgba(255,107,53,0.1)', border: '1px solid rgba(255,107,53,0.3)', color: '#0A66C2', padding: '10px 20px', borderRadius: '14px', fontSize: '13px', fontWeight: '800', cursor: 'pointer' }}>
                   {auditLoading ? 'Auditing...' : 'Run New Audit ⚡'}
                 </button>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                 {[
-                  { icon: '🧬', name: 'Skill DNA Assessment', status: userData?.learningProgress?.percent > 0 ? 'Verified' : 'Pending', color: userData?.learningProgress?.percent > 0 ? '#2ECC71' : '#FF6B35', action: () => navigateTo('skillmap') },
+                  { icon: '🧬', name: 'Skill DNA Assessment', status: userData?.learningProgress?.percent > 0 ? 'Verified' : 'Pending', color: userData?.learningProgress?.percent > 0 ? '#057642' : '#0A66C2', action: () => navigateTo('skillmap') },
                   { icon: '🚀', name: 'Learning Path Execution', status: lpct > 50 ? 'Advanced' : 'In Progress', color: '#3498DB', action: () => navigateTo('learning') },
                   { icon: '🎥', name: 'AI Mock Interview', status: 'Available', color: '#E67E22', action: () => navigateTo('interview') },
                   { icon: '🎯', name: 'Industry Mentoring', status: 'Active', color: '#9B59B6', action: () => navigateTo('mentoring') },
@@ -375,7 +413,7 @@ function App() {
                 <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', lineHeight: '1.6', marginBottom: '24px' }}>
                   "Based on your current progress, you are outperforming 85% of candidates in the {userData?.skill?.title || 'domain'}. Focus on Video Introduction to seal the deal."
                 </p>
-                <button onClick={() => navigateTo('interview')} style={{ width: '100%', background: '#FF6B35', border: 'none', padding: '16px', borderRadius: '16px', color: 'white', fontWeight: '800', cursor: 'pointer', boxShadow: '0 10px 25px rgba(255,107,53,0.3)' }}>Start Video Intro</button>
+                <button onClick={() => navigateTo('interview')} style={{ width: '100%', background: '#0A66C2', border: 'none', padding: '16px', borderRadius: '16px', color: 'white', fontWeight: '800', cursor: 'pointer', boxShadow: '0 10px 25px rgba(255,107,53,0.3)' }}>Start Video Intro</button>
               </div>
             </div>
           </div>
@@ -385,7 +423,7 @@ function App() {
             <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(20px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
               <div style={{ background: 'linear-gradient(145deg, #1a1a1c, #121214)', border: '1px solid rgba(255,107,53,0.4)', borderRadius: '32px', padding: '50px', maxWidth: '650px', width: '100%', textAlign: 'center', boxShadow: '0 40px 100px rgba(0,0,0,0.8)', animation: 'modalSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1)' }}>
                 <div style={{ fontSize: '60px', marginBottom: '24px' }}>🤖</div>
-                <h3 style={{ fontSize: '28px', fontWeight: '900', marginBottom: '12px', color: '#FF6B35', letterSpacing: '-0.5px' }}>AI Industry Verdict</h3>
+                <h3 style={{ fontSize: '28px', fontWeight: '900', marginBottom: '12px', color: '#0A66C2', letterSpacing: '-0.5px' }}>AI Industry Verdict</h3>
                 <div style={{ fontSize: '20px', fontWeight: '900', color: 'white', marginBottom: '30px', textTransform: 'uppercase', letterSpacing: '2px' }}>{auditResult.verdict}</div>
                 
                 <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '30px', marginBottom: '32px', textAlign: 'left' }}>
@@ -394,16 +432,16 @@ function App() {
                   <div style={{ marginTop: '25px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                     <div style={{ background: 'rgba(0,0,0,0.2)', padding: '15px', borderRadius: '15px' }}>
                       <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', display: 'block', marginBottom: '4px' }}>Hiring Likelihood</span>
-                      <span style={{ fontSize: '22px', fontWeight: '900', color: '#2ECC71' }}>{auditResult.hiringLikelihood}%</span>
+                      <span style={{ fontSize: '22px', fontWeight: '900', color: '#057642' }}>{auditResult.hiringLikelihood}%</span>
                     </div>
                     <div style={{ background: 'rgba(0,0,0,0.2)', padding: '15px', borderRadius: '15px' }}>
                       <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', display: 'block', marginBottom: '4px' }}>Actionable Gap</span>
-                      <span style={{ fontSize: '14px', fontWeight: '800', color: '#FF6B35' }}>{auditResult.criticalMissingSkill}</span>
+                      <span style={{ fontSize: '14px', fontWeight: '800', color: '#0A66C2' }}>{auditResult.criticalMissingSkill}</span>
                     </div>
                   </div>
                 </div>
 
-                <button onClick={() => setAuditResult(null)} style={{ background: '#FF6B35', color: 'white', border: 'none', padding: '16px 50px', borderRadius: '40px', fontSize: '16px', fontWeight: '800', cursor: 'pointer', boxShadow: '0 10px 30px rgba(255,107,53,0.3)' }}>
+                <button onClick={() => setAuditResult(null)} style={{ background: '#0A66C2', color: 'white', border: 'none', padding: '16px 50px', borderRadius: '40px', fontSize: '16px', fontWeight: '800', cursor: 'pointer', boxShadow: '0 10px 30px rgba(255,107,53,0.3)' }}>
                   Acknowledge Verdict
                 </button>
               </div>
@@ -415,7 +453,7 @@ function App() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)', color: 'white', fontFamily: 'var(--font-main)', position: 'relative', overflowX: 'hidden' }}>
+    <div style={{ minHeight: '100vh', background: theme.pageBg, color: theme.textPrimary, fontFamily: 'var(--font-main)', position: 'relative', overflowX: 'hidden' }}>
       <CustomCursor />
       <ParticleBackground />
       {/* Glassmorphism sticky nav */}
@@ -423,16 +461,19 @@ function App() {
         <h1 className="pf-shimmer-text" style={{ fontFamily: 'var(--font-display)', fontSize: '28px', fontWeight: '900', letterSpacing: '-0.5px' }}>⚡ PathForge</h1>
         <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
           <a href="#features" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '14px', fontWeight: '500', transition: 'color 0.2s' }}
-            onMouseEnter={e => e.target.style.color = '#FF6B35'} onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.8)'}>Features</a>
+            onMouseEnter={e => e.target.style.color = '#0A66C2'} onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.8)'}>Features</a>
           <a href="#howitworks" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '14px', fontWeight: '500', transition: 'color 0.2s' }}
-            onMouseEnter={e => e.target.style.color = '#FF6B35'} onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.8)'}>How it Works</a>
-          <button onClick={() => navigateTo('dashboard')} style={{ background: 'linear-gradient(135deg, rgba(255,107,53,0.2), rgba(255,107,53,0.1))', color: '#FF6B35', border: '1px solid rgba(255,107,53,0.5)', padding: '8px 20px', borderRadius: '25px', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold', backdropFilter: 'blur(8px)', transition: 'all 0.2s' }}
+            onMouseEnter={e => e.target.style.color = '#0A66C2'} onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.8)'}>How it Works</a>
+          <button onClick={() => navigateTo('dashboard')} style={{ background: 'linear-gradient(135deg, rgba(255,107,53,0.2), rgba(255,107,53,0.1))', color: '#0A66C2', border: '1px solid rgba(255,107,53,0.5)', padding: '8px 20px', borderRadius: '25px', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold', backdropFilter: 'blur(8px)', transition: 'all 0.2s' }}
             onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,107,53,0.3)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
             onMouseLeave={e => { e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255,107,53,0.2), rgba(255,107,53,0.1))'; e.currentTarget.style.transform = 'translateY(0)'; }}
           >📋 Dashboard</button>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <button onClick={() => navigateTo('profile')} style={{ background: 'rgba(255,107,53,0.15)', border: '1px solid rgba(255,107,53,0.35)', borderRadius: '20px', padding: '8px 16px', fontSize: '14px', color: '#FF6B35', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', backdropFilter: 'blur(8px)', transition: 'all 0.2s' }}
+          <button onClick={() => setDarkMode(!darkMode)} style={{ background: 'transparent', border: 'none', fontSize: '20px', cursor: 'pointer', padding: '8px' }}>
+            {darkMode ? '☀️' : '🌙'}
+          </button>
+          <button onClick={() => navigateTo('profile')} style={{ background: 'rgba(255,107,53,0.15)', border: '1px solid rgba(255,107,53,0.35)', borderRadius: '20px', padding: '8px 16px', fontSize: '14px', color: '#0A66C2', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', backdropFilter: 'blur(8px)', transition: 'all 0.2s' }}
             onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,107,53,0.25)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
             onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,107,53,0.15)'; e.currentTarget.style.transform = 'translateY(0)'; }}
           >
@@ -462,7 +503,7 @@ function App() {
               } else {
                 navigateTo('dashboard');
               }
-            }} className="pf-glow-btn" style={{ background: 'linear-gradient(135deg, #FF6B35, #FF9A6C)', color: 'white', border: 'none', padding: '18px 44px', borderRadius: '30px', fontSize: '17px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 8px 30px rgba(255,107,53,0.4)' }}>
+            }} className="pf-glow-btn" style={{ background: 'linear-gradient(135deg, #0A66C2, #FF9A6C)', color: 'white', border: 'none', padding: '18px 44px', borderRadius: '30px', fontSize: '17px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 8px 30px rgba(255,107,53,0.4)' }}>
               {userData?.skill ? '📋 Open Dashboard' : '🚀 Start Your Journey →'}
             </button>
           </div>
@@ -518,12 +559,12 @@ function App() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))', gap: '24px', maxWidth: '1100px', margin: '0 auto' }}>
           {[
             { icon: '🧬', title: 'Skills Assessment', desc: 'Identify your technical strengths and critical skill gaps through a comprehensive evaluation mapped to current industry standards.', action: () => navigateTo('skillmap'), color: '#9B59B6' },
-            { icon: '📍', title: 'Company Search', desc: 'Discover local and remote career opportunities from our network of partner companies hiring for your specific expertise.', action: () => navigateTo('geo'), color: '#2ECC71' },
+            { icon: '📍', title: 'Company Search', desc: 'Discover local and remote career opportunities from our network of partner companies hiring for your specific expertise.', action: () => navigateTo('geo'), color: '#057642' },
             { icon: '🤖', title: 'Personalized Roadmap', desc: 'Follow a structured, week-by-week curriculum tailored to your career goals, featuring curated projects and certification milestones.', action: () => navigateTo('learning'), color: '#3498DB' },
-            { icon: '🎯', title: 'Industry Mentoring', desc: 'Connect with experienced professionals for direct feedback, mock interviews, and career guidance tailored to your growth areas.', action: () => navigateTo('mentoring'), color: '#E74C3C' },
-            { icon: '📊', title: 'Job Readiness Score', desc: 'Track your employability in real-time with a dynamic score that updates as you complete modules, projects, and assessments.', action: () => navigateTo('score'), color: '#F39C12' },
+            { icon: '🎯', title: 'Industry Mentoring', desc: 'Connect with experienced professionals for direct feedback, mock interviews, and career guidance tailored to your growth areas.', action: () => navigateTo('mentoring'), color: '#CC1016' },
+            { icon: '📊', title: 'Job Readiness Score', desc: 'Track your employability in real-time with a dynamic score that updates as you complete modules, projects, and assessments.', action: () => navigateTo('score'), color: '#F5C518' },
             { icon: '📄', title: 'Resume Builder', desc: 'Generate a high-impact, ATS-optimized resume that automatically highlights your verified skills and platform-validated projects.', action: () => navigateTo('resume'), color: '#1ABC9C' },
-            { icon: '🌐', title: 'Community Feed', desc: 'Collaborate with a network of driven learners, share daily milestones, and gain inspiration from peer-led technical projects.', action: () => navigateTo('community'), color: '#FF6B35' },
+            { icon: '🌐', title: 'Community Feed', desc: 'Collaborate with a network of driven learners, share daily milestones, and gain inspiration from peer-led technical projects.', action: () => navigateTo('community'), color: '#0A66C2' },
           ].map((f, i) => (
             <div key={i} onClick={f.action} tabIndex={0} role="button"
               onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') f.action(); }}
@@ -632,7 +673,7 @@ function ImageCropperModal({ imageSrc, cropShape, aspectRatio, onCropDone, onCan
     ctx.restore();
 
     // Draw crop border
-    ctx.strokeStyle = '#FF6B35';
+    ctx.strokeStyle = '#0A66C2';
     ctx.lineWidth = 2;
     ctx.setLineDash([6, 4]);
     ctx.beginPath();
@@ -756,7 +797,7 @@ function ImageCropperModal({ imageSrc, cropShape, aspectRatio, onCropDone, onCan
     <div style={modalOverlay} onClick={onCancel}>
       <div style={modalBox} onClick={e => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          <h3 style={{ color: '#FF6B35', fontSize: '18px', fontWeight: 'bold', margin: 0 }}>✂️ Crop Image</h3>
+          <h3 style={{ color: '#0A66C2', fontSize: '18px', fontWeight: 'bold', margin: 0 }}>✂️ Crop Image</h3>
           <button onClick={onCancel} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', fontSize: '16px' }}>✕</button>
         </div>
 
@@ -795,7 +836,7 @@ function ImageCropperModal({ imageSrc, cropShape, aspectRatio, onCropDone, onCan
             onChange={(e) => setScale(parseFloat(e.target.value))}
             style={{
               flex: 1, height: '6px', borderRadius: '3px',
-              accentColor: '#FF6B35', cursor: 'pointer',
+              accentColor: '#0A66C2', cursor: 'pointer',
             }}
           />
           <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', minWidth: '40px' }}>{Math.round(scale * 100)}%</span>
@@ -812,7 +853,7 @@ function ImageCropperModal({ imageSrc, cropShape, aspectRatio, onCropDone, onCan
           }}>Cancel</button>
           <button onClick={handleCrop} style={{
             flex: 2, padding: '12px', borderRadius: '12px', border: 'none',
-            background: 'linear-gradient(135deg, #FF6B35, #FF9A6C)', color: 'white', cursor: 'pointer',
+            background: 'linear-gradient(135deg, #0A66C2, #FF9A6C)', color: 'white', cursor: 'pointer',
             fontSize: '14px', fontWeight: 'bold', boxShadow: '0 4px 15px rgba(255,107,53,0.4)',
           }}>✂️ Crop & Save</button>
         </div>
@@ -828,7 +869,7 @@ function ProfilePage({ user, userData, onBack, persistUserData, handleLogout }) 
   const coverInputRef = useRef(null);
   const [editMode, setEditMode] = useState(false);
   const [theme, setTheme] = useState('dark');
-  const [primaryColor, setPrimaryColor] = useState('#FF6B35');
+  const [primaryColor, setPrimaryColor] = useState('#0A66C2');
   const [fontSize, setFontSize] = useState('medium');
   const [animationsEnabled, setAnimationsEnabled] = useState(true);
 
@@ -943,7 +984,7 @@ function ProfilePage({ user, userData, onBack, persistUserData, handleLogout }) 
   const labelStyle = { fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginBottom: '6px', display: 'block', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)', color: 'white', fontFamily: 'Arial, sans-serif', padding: '30px 20px' }}>
+    <div style={{ minHeight: '100vh', background: theme.pageBg, color: theme.textPrimary, fontFamily: 'Arial, sans-serif', padding: '30px 20px' }}>
 
       {/* Image Cropper Modal */}
       {cropperImage && (
@@ -961,7 +1002,7 @@ function ProfilePage({ user, userData, onBack, persistUserData, handleLogout }) 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '30px' }}>
           <button onClick={onBack} style={{ background: 'transparent', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.2)', padding: '8px 18px', borderRadius: '20px', cursor: 'pointer', fontSize: '13px' }}>← Back</button>
-          <h1 style={{ color: '#FF6B35', fontSize: '22px', fontWeight: 'bold' }}>⚡ My Profile</h1>
+          <h1 style={{ color: '#0A66C2', fontSize: '22px', fontWeight: 'bold' }}>⚡ My Profile</h1>
         </div>
 
         {/* Profile Card */}
@@ -972,7 +1013,7 @@ function ProfilePage({ user, userData, onBack, persistUserData, handleLogout }) 
             onClick={() => coverInputRef.current?.click()}
             style={{
               height: '120px',
-              background: coverPhoto ? `url(${coverPhoto}) center/cover no-repeat` : 'linear-gradient(135deg, #FF6B35, #FF9A6C, #302b63)',
+              background: coverPhoto ? `url(${coverPhoto}) center/cover no-repeat` : 'linear-gradient(135deg, #0A66C2, #FF9A6C, #302b63)',
               position: 'relative', cursor: 'pointer',
             }}
           >
@@ -1018,7 +1059,7 @@ function ProfilePage({ user, userData, onBack, persistUserData, handleLogout }) 
             </div>
 
             {userData?.skill && (
-              <div style={{ marginTop: '12px', background: 'rgba(255,107,53,0.1)', border: '1px solid rgba(255,107,53,0.3)', borderRadius: '20px', padding: '6px 16px', fontSize: '13px', color: '#FF6B35' }}>
+              <div style={{ marginTop: '12px', background: 'rgba(255,107,53,0.1)', border: '1px solid rgba(255,107,53,0.3)', borderRadius: '20px', padding: '6px 16px', fontSize: '13px', color: '#0A66C2' }}>
                 {userData.skill.icon} {userData.skill.title}
               </div>
             )}
@@ -1030,7 +1071,7 @@ function ProfilePage({ user, userData, onBack, persistUserData, handleLogout }) 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
             <h3 style={{ fontSize: '16px', fontWeight: 'bold' }}>Profile Details</h3>
             {!editMode && (
-              <button onClick={() => setEditMode(true)} style={{ background: 'rgba(255,107,53,0.15)', color: '#FF6B35', border: '1px solid rgba(255,107,53,0.4)', padding: '6px 16px', borderRadius: '20px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>✏️ Edit</button>
+              <button onClick={() => setEditMode(true)} style={{ background: 'rgba(255,107,53,0.15)', color: '#0A66C2', border: '1px solid rgba(255,107,53,0.4)', padding: '6px 16px', borderRadius: '20px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>✏️ Edit</button>
             )}
           </div>
 
@@ -1053,7 +1094,7 @@ function ProfilePage({ user, userData, onBack, persistUserData, handleLogout }) 
                 <textarea style={{ ...inputStyle, minHeight: '70px', resize: 'vertical' }} value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} placeholder="Aspiring Frontend Developer..." />
               </div>
               <div style={{ display: 'flex', gap: '10px' }}>
-                <button onClick={handleSave} disabled={saving} style={{ flex: 1, background: '#FF6B35', color: 'white', border: 'none', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.6 : 1 }}>
+                <button onClick={handleSave} disabled={saving} style={{ flex: 1, background: '#0A66C2', color: 'white', border: 'none', padding: '12px', borderRadius: '12px', fontWeight: 'bold', cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.6 : 1 }}>
                   {saving ? 'Saving...' : '💾 Save Changes'}
                 </button>
                 <button onClick={() => setEditMode(false)} style={{ background: 'transparent', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.2)', padding: '12px 20px', borderRadius: '12px', cursor: 'pointer' }}>Cancel</button>
@@ -1086,7 +1127,7 @@ function ProfilePage({ user, userData, onBack, persistUserData, handleLogout }) 
                 onClick={() => updateTheme(theme === 'dark' ? 'light' : 'dark')}
                 style={{
                   width: '48px', height: '26px', borderRadius: '13px', border: 'none', cursor: 'pointer', position: 'relative', transition: 'background 0.3s',
-                  background: theme === 'dark' ? '#FF6B35' : 'rgba(255,255,255,0.15)',
+                  background: theme === 'dark' ? '#0A66C2' : 'rgba(255,255,255,0.15)',
                 }}
               >
                 <div style={{
@@ -1103,7 +1144,7 @@ function ProfilePage({ user, userData, onBack, persistUserData, handleLogout }) 
                 <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', marginTop: '2px' }}>Customize app accent color</div>
               </div>
               <div style={{ display: 'flex', gap: '8px' }}>
-                {['#FF6B35', '#3498DB', '#2ECC71', '#9B59B6', '#E74C3C', '#F39C12'].map(color => (
+                {['#0A66C2', '#3498DB', '#057642', '#9B59B6', '#CC1016', '#F5C518'].map(color => (
                   <button
                     key={color}
                     onClick={() => updatePrimaryColor(color)}
@@ -1151,7 +1192,7 @@ function ProfilePage({ user, userData, onBack, persistUserData, handleLogout }) 
                 onClick={toggleAnimations}
                 style={{
                   width: '48px', height: '26px', borderRadius: '13px', border: 'none', cursor: 'pointer', position: 'relative', transition: 'background 0.3s',
-                  background: animationsEnabled ? '#2ECC71' : 'rgba(255,255,255,0.15)',
+                  background: animationsEnabled ? '#057642' : 'rgba(255,255,255,0.15)',
                 }}
               >
                 <div style={{
@@ -1181,7 +1222,7 @@ function ProfilePage({ user, userData, onBack, persistUserData, handleLogout }) 
                 }}
                 style={{
                   width: '48px', height: '26px', borderRadius: '13px', border: 'none', cursor: 'pointer', position: 'relative', transition: 'background 0.3s',
-                  background: userData?.settings?.emailNotif ? '#2ECC71' : 'rgba(255,255,255,0.15)',
+                  background: userData?.settings?.emailNotif ? '#057642' : 'rgba(255,255,255,0.15)',
                 }}
               >
                 <div style={{
@@ -1204,7 +1245,7 @@ function ProfilePage({ user, userData, onBack, persistUserData, handleLogout }) 
                 }}
                 style={{
                   width: '48px', height: '26px', borderRadius: '13px', border: 'none', cursor: 'pointer', position: 'relative', transition: 'background 0.3s',
-                  background: userData?.settings?.dailyReminder ? '#2ECC71' : 'rgba(255,255,255,0.15)',
+                  background: userData?.settings?.dailyReminder ? '#057642' : 'rgba(255,255,255,0.15)',
                 }}
               >
                 <div style={{
@@ -1295,7 +1336,7 @@ function ProfilePage({ user, userData, onBack, persistUserData, handleLogout }) 
 /* ─── Landing Page Component ─── */
 function LandingPage({ onAuth }) {
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)', color: 'white', fontFamily: 'var(--font-main)', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ minHeight: '100vh', background: theme.pageBg, color: theme.textPrimary, fontFamily: 'var(--font-main)', position: 'relative', overflow: 'hidden' }}>
       <CustomCursor />
       <ParticleBackground />
 
@@ -1304,11 +1345,11 @@ function LandingPage({ onAuth }) {
         <h1 className="pf-shimmer-text" style={{ fontFamily: 'var(--font-display)', fontSize: '28px', fontWeight: '900', letterSpacing: '-0.5px' }}>⚡ PathForge</h1>
         <div style={{ display: 'flex', gap: '16px' }}>
           <button onClick={onAuth} style={{ background: 'transparent', color: 'white', border: '1px solid rgba(255,255,255,0.2)', padding: '10px 24px', borderRadius: '25px', cursor: 'pointer', fontSize: '14px', fontWeight: '600', transition: 'all 0.2s' }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,107,53,0.5)'; e.currentTarget.style.color = '#FF6B35'; }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,107,53,0.5)'; e.currentTarget.style.color = '#0A66C2'; }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.color = 'white'; }}>
             Login
           </button>
-          <button onClick={onAuth} className="pf-glow-btn" style={{ background: 'linear-gradient(135deg, #FF6B35, #FF9A6C)', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '25px', cursor: 'pointer', fontSize: '14px', fontWeight: '700', boxShadow: '0 4px 15px rgba(255,107,53,0.3)' }}>
+          <button onClick={onAuth} className="pf-glow-btn" style={{ background: 'linear-gradient(135deg, #0A66C2, #FF9A6C)', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '25px', cursor: 'pointer', fontSize: '14px', fontWeight: '700', boxShadow: '0 4px 15px rgba(255,107,53,0.3)' }}>
             Sign Up
           </button>
         </div>
@@ -1327,7 +1368,7 @@ function LandingPage({ onAuth }) {
           PathForge combines advanced AI mentoring, real-time skill mapping, and direct corporate connections to transform your professional journey.
         </p>
         <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap', animation: 'heroTextReveal 0.8s ease both 0.6s' }}>
-          <button onClick={onAuth} className="pf-glow-btn" style={{ background: 'linear-gradient(135deg, #FF6B35, #FF9A6C)', color: 'white', border: 'none', padding: '20px 50px', borderRadius: '35px', fontSize: '18px', fontWeight: '800', cursor: 'pointer', boxShadow: '0 10px 30px rgba(255,107,53,0.4)' }}>
+          <button onClick={onAuth} className="pf-glow-btn" style={{ background: 'linear-gradient(135deg, #0A66C2, #FF9A6C)', color: 'white', border: 'none', padding: '20px 50px', borderRadius: '35px', fontSize: '18px', fontWeight: '800', cursor: 'pointer', boxShadow: '0 10px 30px rgba(255,107,53,0.4)' }}>
             Get Started Now →
           </button>
           <a href="#about" style={{ background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.15)', padding: '20px 40px', borderRadius: '35px', fontSize: '18px', fontWeight: '600', cursor: 'pointer', textDecoration: 'none', backdropFilter: 'blur(10px)', transition: 'all 0.3s' }}
@@ -1392,7 +1433,7 @@ function LandingPage({ onAuth }) {
               { t: 'Direct Hiring', d: 'Get discovered by companies looking for your specific technical profile.' }
             ].map((item, i) => (
               <div key={i} style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
-                <div style={{ color: '#FF6B35', fontSize: '18px', marginTop: '2px' }}>✅</div>
+                <div style={{ color: '#0A66C2', fontSize: '18px', marginTop: '2px' }}>✅</div>
                 <div>
                   <div style={{ fontWeight: '700', fontSize: '15px' }}>{item.t}</div>
                   <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px' }}>{item.d}</div>
@@ -1404,7 +1445,7 @@ function LandingPage({ onAuth }) {
         <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '30px', padding: '40px', position: 'relative', animation: 'fadeSlideIn 1s ease both 0.3s' }}>
           <div style={{ position: 'absolute', top: '-20px', left: '-20px', width: '100px', height: '100px', background: 'radial-gradient(circle, rgba(255,107,53,0.2) 0%, transparent 70%)', filter: 'blur(20px)' }}></div>
           <div style={{ position: 'relative', zIndex: 1 }}>
-            <div style={{ fontSize: '11px', color: '#FF6B35', fontWeight: '800', marginBottom: '16px', letterSpacing: '2px', textTransform: 'uppercase' }}>Built for Revenue</div>
+            <div style={{ fontSize: '11px', color: '#0A66C2', fontWeight: '800', marginBottom: '16px', letterSpacing: '2px', textTransform: 'uppercase' }}>Built for Revenue</div>
             <h3 style={{ fontSize: '24px', fontWeight: '800', marginBottom: '16px' }}>Revenue-Ready Ecosystem</h3>
             <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '15px', lineHeight: '1.7' }}>
               Our dual-engine model partners with Fortune 500 giants to deliver high-potential, pre-vetted talent. By bridging the gap between student ambition and corporate necessity, we've built a sustainable, revenue-generating ecosystem for the future of work.

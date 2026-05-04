@@ -256,7 +256,9 @@ const CERTIFICATIONS_DATA = {
   ]
 };
 
-export default function Certifications({ userData, onBack, onProgressUpdate }) {
+const defaultTheme = { pageBg:'#1D2226', cardBg:'#1B1F23', inputBg:'#283039', border:'#38434F', textPrimary:'#E7E9EA', textMuted:'#B0B7BF', accent:'#0A66C2', accentHover:'#004182', accentLight:'#70B5F9', success:'#057642', warning:'#F5C518', error:'#CC1016' };
+
+export default function Certifications({ userData, onBack, onProgressUpdate, theme = defaultTheme }) {
   const [selectedCategory, setSelectedCategory] = useState('Frontend Development');
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [currentVideo, setCurrentVideo] = useState(null);
@@ -315,10 +317,11 @@ export default function Certifications({ userData, onBack, onProgressUpdate }) {
 
   if (currentVideo) {
     return (
+    return (
       <div style={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)',
-        color: 'white',
+        background: theme.pageBg,
+        color: theme.textPrimary,
         fontFamily: 'Arial, sans-serif',
         padding: '20px'
       }}>
@@ -326,14 +329,14 @@ export default function Certifications({ userData, onBack, onProgressUpdate }) {
           <button 
             onClick={() => setCurrentVideo(null)}
             style={{
-              background: 'transparent', color: 'rgba(255,255,255,0.6)',
-              border: '1px solid rgba(255,255,255,0.2)', padding: '8px 18px',
+              background: 'transparent', color: theme.textMuted,
+              border: `1px solid ${theme.border}`, padding: '8px 18px',
               borderRadius: '20px', cursor: 'pointer', fontSize: '13px'
             }}
           >
             ← Back to Course
           </button>
-          <h1 style={{ color: '#FF6B35', fontSize: '22px', fontWeight: 'bold' }}>⚡ PathForge</h1>
+          <h1 style={{ color: theme.accent, fontSize: '22px', fontWeight: 'bold' }}>⚡ PathForge</h1>
         </div>
 
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
@@ -341,8 +344,8 @@ export default function Certifications({ userData, onBack, onProgressUpdate }) {
             {/* Video Player */}
             <div>
               <div style={{
-                background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(255,255,255,0.1)',
+                background: theme.cardBg,
+                border: `1px solid ${theme.border}`,
                 borderRadius: '16px',
                 overflow: 'hidden',
                 marginBottom: '16px'
@@ -368,14 +371,14 @@ export default function Certifications({ userData, onBack, onProgressUpdate }) {
                 <h3 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '8px' }}>
                   {currentVideo.title}
                 </h3>
-                <p style={{ color: 'rgba(255,255,255,0.6)' }}>
+                <p style={{ color: theme.textMuted }}>
                   Duration: {currentVideo.duration}
                 </p>
                 <button
                   onClick={() => handleVideoComplete(selectedCourse.id, currentVideo.id)}
                   style={{
-                    background: '#2ECC71',
-                    color: 'white',
+                    background: theme.success,
+                    color: '#FFFFFF',
                     border: 'none',
                     padding: '12px 24px',
                     borderRadius: '20px',
@@ -401,8 +404,8 @@ export default function Certifications({ userData, onBack, onProgressUpdate }) {
                     key={video.id}
                     onClick={() => setCurrentVideo(video)}
                     style={{
-                      background: completedVideos[video.id] ? 'rgba(46,204,113,0.1)' : 'rgba(255,255,255,0.05)',
-                      border: completedVideos[video.id] ? '1px solid rgba(46,204,113,0.3)' : '1px solid rgba(255,255,255,0.1)',
+                      background: completedVideos[video.id] ? theme.success + '1A' : theme.cardBg,
+                      border: completedVideos[video.id] ? `1px solid ${theme.success}` : `1px solid ${theme.border}`,
                       borderRadius: '12px',
                       padding: '12px',
                       cursor: 'pointer',
@@ -415,7 +418,7 @@ export default function Certifications({ userData, onBack, onProgressUpdate }) {
                       width: '32px',
                       height: '32px',
                       borderRadius: '8px',
-                      background: currentVideo?.id === video.id ? '#FF6B35' : 'rgba(255,255,255,0.1)',
+                      background: currentVideo?.id === video.id ? theme.accent : theme.inputBg,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -428,7 +431,7 @@ export default function Certifications({ userData, onBack, onProgressUpdate }) {
                       <div style={{ fontSize: '14px', fontWeight: '600' }}>
                         {video.title}
                       </div>
-                      <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>
+                      <div style={{ fontSize: '12px', color: theme.textMuted }}>
                         {video.duration}
                       </div>
                     </div>
@@ -448,8 +451,8 @@ export default function Certifications({ userData, onBack, onProgressUpdate }) {
     return (
       <div style={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)',
-        color: 'white',
+        background: theme.pageBg,
+        color: theme.textPrimary,
         fontFamily: 'Arial, sans-serif',
         padding: '20px'
       }}>
@@ -457,20 +460,20 @@ export default function Certifications({ userData, onBack, onProgressUpdate }) {
           <button 
             onClick={() => setSelectedCourse(null)}
             style={{
-              background: 'transparent', color: 'rgba(255,255,255,0.6)',
-              border: '1px solid rgba(255,255,255,0.2)', padding: '8px 18px',
+              background: 'transparent', color: theme.textMuted,
+              border: `1px solid ${theme.border}`, padding: '8px 18px',
               borderRadius: '20px', cursor: 'pointer', fontSize: '13px'
             }}
           >
             ← Back to Certifications
           </button>
-          <h1 style={{ color: '#FF6B35', fontSize: '22px', fontWeight: 'bold' }}>⚡ PathForge</h1>
+          <h1 style={{ color: theme.accent, fontSize: '22px', fontWeight: 'bold' }}>⚡ PathForge</h1>
         </div>
 
         <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
           <div style={{
-            background: 'rgba(255,255,255,0.05)',
-            border: '1px solid rgba(255,255,255,0.1)',
+            background: theme.cardBg,
+            border: `1px solid ${theme.border}`,
             borderRadius: '20px',
             padding: '32px',
             marginBottom: '24px'
@@ -489,8 +492,8 @@ export default function Certifications({ userData, onBack, onProgressUpdate }) {
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
                   <span style={{
-                    background: 'rgba(255,107,53,0.2)',
-                    color: '#FF6B35',
+                    background: theme.inputBg,
+                    color: theme.accent,
                     padding: '4px 12px',
                     borderRadius: '20px',
                     fontSize: '12px',
@@ -499,8 +502,8 @@ export default function Certifications({ userData, onBack, onProgressUpdate }) {
                     {selectedCourse.provider}
                   </span>
                   <span style={{
-                    background: 'rgba(52,152,219,0.2)',
-                    color: '#3498DB',
+                    background: theme.inputBg,
+                    color: theme.accentLight,
                     padding: '4px 12px',
                     borderRadius: '20px',
                     fontSize: '12px',
@@ -512,10 +515,10 @@ export default function Certifications({ userData, onBack, onProgressUpdate }) {
                 <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '12px' }}>
                   {selectedCourse.title}
                 </h2>
-                <p style={{ color: 'rgba(255,255,255,0.7)', lineHeight: '1.6', marginBottom: '16px' }}>
+                <p style={{ color: theme.textMuted, lineHeight: '1.6', marginBottom: '16px' }}>
                   {selectedCourse.description}
                 </p>
-                <div style={{ display: 'flex', gap: '24px', fontSize: '14px', color: 'rgba(255,255,255,0.6)' }}>
+                <div style={{ display: 'flex', gap: '24px', fontSize: '14px', color: theme.textMuted }}>
                   <div>📅 {selectedCourse.duration}</div>
                   <div>⭐ {selectedCourse.rating} rating</div>
                   <div>👥 {selectedCourse.enrolled.toLocaleString()} enrolled</div>
@@ -528,15 +531,15 @@ export default function Certifications({ userData, onBack, onProgressUpdate }) {
               <div style={{ marginBottom: '24px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                   <span style={{ fontSize: '14px', fontWeight: '600' }}>Your Progress</span>
-                  <span style={{ fontSize: '14px', color: '#FF6B35' }}>{progress}%</span>
+                  <span style={{ fontSize: '14px', color: theme.accent }}>{progress}%</span>
                 </div>
                 <div style={{
-                  width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)',
+                  width: '100%', height: '8px', background: theme.inputBg,
                   borderRadius: '4px', overflow: 'hidden'
                 }}>
                   <div style={{
                     width: `${progress}%`, height: '100%',
-                    background: '#FF6B35',
+                    background: theme.accent,
                     borderRadius: '4px', transition: 'width 0.3s ease'
                   }} />
                 </div>
@@ -549,7 +552,7 @@ export default function Certifications({ userData, onBack, onProgressUpdate }) {
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                 {selectedCourse.skills.map(skill => (
                   <span key={skill} style={{
-                    background: 'rgba(255,255,255,0.1)',
+                    background: theme.inputBg,
                     padding: '6px 12px',
                     borderRadius: '20px',
                     fontSize: '12px'
@@ -562,8 +565,8 @@ export default function Certifications({ userData, onBack, onProgressUpdate }) {
 
             {/* Certificate Info */}
             <div style={{
-              background: 'rgba(46,204,113,0.1)',
-              border: '1px solid rgba(46,204,113,0.3)',
+              background: theme.inputBg,
+              border: `1px solid ${theme.success}`,
               borderRadius: '12px',
               padding: '16px',
               marginBottom: '24px'
@@ -571,10 +574,10 @@ export default function Certifications({ userData, onBack, onProgressUpdate }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ fontSize: '24px' }}>🏆</div>
                 <div>
-                  <div style={{ fontWeight: 'bold', color: '#2ECC71' }}>
+                  <div style={{ fontWeight: 'bold', color: theme.success }}>
                     Certificate of Completion
                   </div>
-                  <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.7)' }}>
+                  <div style={{ fontSize: '14px', color: theme.textMuted }}>
                     {selectedCourse.certificate}
                   </div>
                 </div>
@@ -587,8 +590,8 @@ export default function Certifications({ userData, onBack, onProgressUpdate }) {
                 <button
                   onClick={() => handleEnroll(selectedCourse)}
                   style={{
-                    background: '#FF6B35',
-                    color: 'white',
+                    background: theme.accent,
+                    color: '#FFFFFF',
                     border: 'none',
                     padding: '14px 32px',
                     borderRadius: '25px',
@@ -603,8 +606,8 @@ export default function Certifications({ userData, onBack, onProgressUpdate }) {
                 <button
                   onClick={() => setCurrentVideo(selectedCourse.videos[0])}
                   style={{
-                    background: '#2ECC71',
-                    color: 'white',
+                    background: theme.success,
+                    color: '#FFFFFF',
                     border: 'none',
                     padding: '14px 32px',
                     borderRadius: '25px',
@@ -631,8 +634,8 @@ export default function Certifications({ userData, onBack, onProgressUpdate }) {
                     key={video.id}
                     onClick={() => setCurrentVideo(video)}
                     style={{
-                      background: completedVideos[video.id] ? 'rgba(46,204,113,0.1)' : 'rgba(255,255,255,0.05)',
-                      border: completedVideos[video.id] ? '1px solid rgba(46,204,113,0.3)' : '1px solid rgba(255,255,255,0.1)',
+                      background: completedVideos[video.id] ? theme.success + '1A' : theme.cardBg,
+                      border: completedVideos[video.id] ? `1px solid ${theme.success}` : `1px solid ${theme.border}`,
                       borderRadius: '12px',
                       padding: '16px',
                       cursor: 'pointer',
@@ -645,7 +648,7 @@ export default function Certifications({ userData, onBack, onProgressUpdate }) {
                       width: '60px',
                       height: '40px',
                       borderRadius: '8px',
-                      background: 'rgba(255,255,255,0.1)',
+                      background: theme.inputBg,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -657,7 +660,7 @@ export default function Certifications({ userData, onBack, onProgressUpdate }) {
                       <div style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>
                         {index + 1}. {video.title}
                       </div>
-                      <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.5)' }}>
+                      <div style={{ fontSize: '14px', color: theme.textMuted }}>
                         {video.duration}
                       </div>
                     </div>
@@ -674,8 +677,8 @@ export default function Certifications({ userData, onBack, onProgressUpdate }) {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)',
-      color: 'white',
+      background: theme.pageBg,
+      color: theme.textPrimary,
       fontFamily: 'Arial, sans-serif',
       padding: '20px'
     }}>
@@ -683,14 +686,14 @@ export default function Certifications({ userData, onBack, onProgressUpdate }) {
         <button 
           onClick={onBack}
           style={{
-            background: 'transparent', color: 'rgba(255,255,255,0.6)',
-            border: '1px solid rgba(255,255,255,0.2)', padding: '8px 18px',
+            background: 'transparent', color: theme.textMuted,
+            border: `1px solid ${theme.border}`, padding: '8px 18px',
             borderRadius: '20px', cursor: 'pointer', fontSize: '13px'
           }}
         >
           ← Back
         </button>
-        <h1 style={{ color: '#FF6B35', fontSize: '22px', fontWeight: 'bold' }}>⚡ PathForge</h1>
+        <h1 style={{ color: theme.accent, fontSize: '22px', fontWeight: 'bold' }}>⚡ PathForge</h1>
       </div>
 
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
@@ -698,7 +701,7 @@ export default function Certifications({ userData, onBack, onProgressUpdate }) {
           <h2 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '8px' }}>
             🎓 Professional Certifications
           </h2>
-          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '16px' }}>
+          <p style={{ color: theme.textMuted, fontSize: '16px' }}>
             Industry-recognized courses from top companies like Infosys, Microsoft, IBM, and Google
           </p>
         </div>
@@ -715,8 +718,8 @@ export default function Certifications({ userData, onBack, onProgressUpdate }) {
                 cursor: 'pointer',
                 fontSize: '14px',
                 fontWeight: selectedCategory === category ? 'bold' : 'normal',
-                background: selectedCategory === category ? '#FF6B35' : 'rgba(255,255,255,0.1)',
-                color: 'white',
+                background: selectedCategory === category ? theme.accent : theme.inputBg,
+                color: selectedCategory === category ? '#FFFFFF' : theme.textPrimary,
                 border: 'none',
                 transition: 'all 0.3s ease'
               }}
@@ -732,12 +735,12 @@ export default function Certifications({ userData, onBack, onProgressUpdate }) {
             const progress = isEnrolled(course.id) ? getCourseProgress(course) : 0;
             
             return (
-              <div
+                <div
                 key={course.id}
                 onClick={() => setSelectedCourse(course)}
                 style={{
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.1)',
+                  background: theme.cardBg,
+                  border: `1px solid ${theme.border}`,
                   borderRadius: '16px',
                   overflow: 'hidden',
                   cursor: 'pointer',
@@ -745,11 +748,11 @@ export default function Certifications({ userData, onBack, onProgressUpdate }) {
                 }}
                 onMouseEnter={e => {
                   e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+                  e.currentTarget.style.background = theme.inputBg;
                 }}
                 onMouseLeave={e => {
                   e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                  e.currentTarget.style.background = theme.cardBg;
                 }}
               >
                 <img 
@@ -765,8 +768,8 @@ export default function Certifications({ userData, onBack, onProgressUpdate }) {
                 <div style={{ padding: '20px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
                     <span style={{
-                      background: 'rgba(255,107,53,0.2)',
-                      color: '#FF6B35',
+                      background: theme.inputBg,
+                      color: theme.accent,
                       padding: '4px 8px',
                       borderRadius: '12px',
                       fontSize: '11px',
@@ -775,8 +778,8 @@ export default function Certifications({ userData, onBack, onProgressUpdate }) {
                       {course.provider}
                     </span>
                     <span style={{
-                      background: 'rgba(52,152,219,0.2)',
-                      color: '#3498DB',
+                      background: theme.inputBg,
+                      color: theme.accentLight,
                       padding: '4px 8px',
                       borderRadius: '12px',
                       fontSize: '11px',
@@ -790,15 +793,15 @@ export default function Certifications({ userData, onBack, onProgressUpdate }) {
                     {course.title}
                   </h3>
                   
-                  <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', lineHeight: '1.5', marginBottom: '12px' }}>
+                  <p style={{ color: theme.textMuted, fontSize: '14px', lineHeight: '1.5', marginBottom: '12px' }}>
                     {course.description}
                   </p>
                   
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                    <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>
+                    <div style={{ fontSize: '12px', color: theme.textMuted }}>
                       📅 {course.duration}
                     </div>
-                    <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>
+                    <div style={{ fontSize: '12px', color: theme.textMuted }}>
                       ⭐ {course.rating}
                     </div>
                   </div>
@@ -808,15 +811,15 @@ export default function Certifications({ userData, onBack, onProgressUpdate }) {
                     <div style={{ marginBottom: '12px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
                         <span style={{ fontSize: '12px' }}>Progress</span>
-                        <span style={{ fontSize: '12px', color: '#FF6B35' }}>{progress}%</span>
+                        <span style={{ fontSize: '12px', color: theme.accent }}>{progress}%</span>
                       </div>
                       <div style={{
-                        width: '100%', height: '4px', background: 'rgba(255,255,255,0.1)',
+                        width: '100%', height: '4px', background: theme.inputBg,
                         borderRadius: '2px', overflow: 'hidden'
                       }}>
                         <div style={{
                           width: `${progress}%`, height: '100%',
-                          background: '#FF6B35',
+                          background: theme.accent,
                           borderRadius: '2px'
                         }} />
                       </div>
@@ -824,12 +827,12 @@ export default function Certifications({ userData, onBack, onProgressUpdate }) {
                   )}
 
                   <div style={{
-                    background: 'rgba(46,204,113,0.1)',
-                    border: '1px solid rgba(46,204,113,0.3)',
+                    background: theme.inputBg,
+                    border: `1px solid ${theme.success}`,
                     borderRadius: '8px',
                     padding: '8px 12px',
                     fontSize: '12px',
-                    color: '#2ECC71',
+                    color: theme.success,
                     textAlign: 'center',
                     fontWeight: '600'
                   }}>

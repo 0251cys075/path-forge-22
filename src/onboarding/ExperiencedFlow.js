@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 
-export default function ExperiencedFlow({ onNext, onBack, trackId }) {
+const defaultTheme = { pageBg:'#1D2226', cardBg:'#1B1F23', inputBg:'#283039', border:'#38434F', textPrimary:'#E7E9EA', textMuted:'#B0B7BF', accent:'#0A66C2', accentHover:'#004182', accentLight:'#70B5F9', success:'#057642', warning:'#F5C518', error:'#CC1016' };
+
+export default function ExperiencedFlow({ onNext, onBack, trackId, theme = defaultTheme }) {
   const [selectedSkills, setSelectedSkills] = useState([]);
   const [currentSkillTest, setCurrentSkillTest] = useState(null);
   const [testAnswers, setTestAnswers] = useState([]);
@@ -172,8 +174,8 @@ export default function ExperiencedFlow({ onNext, onBack, trackId }) {
   };
 
   const skillCheckboxStyle = {
-    background: 'rgba(255,255,255,0.03)',
-    border: '1px solid rgba(255,255,255,0.08)',
+    background: theme.cardBg,
+    border: `1px solid ${theme.border}`,
     borderRadius: '16px',
     padding: '20px',
     cursor: 'pointer',
@@ -182,18 +184,18 @@ export default function ExperiencedFlow({ onNext, onBack, trackId }) {
   };
 
   const skillSelectedStyle = {
-    background: 'rgba(255,107,53,0.1)',
-    borderColor: 'rgba(255,107,53,0.3)'
+    background: theme.inputBg,
+    borderColor: theme.accent
   };
 
   const skillVerifiedStyle = {
-    background: 'rgba(46,204,113,0.1)',
-    borderColor: 'rgba(46,204,113,0.3)'
+    background: theme.success + '1A',
+    borderColor: theme.success
   };
 
   const skillFailedStyle = {
-    background: 'rgba(231,76,60,0.1)',
-    borderColor: 'rgba(231,76,60,0.3)'
+    background: theme.error + '1A',
+    borderColor: theme.error
   };
 
   if (currentSkillTest) {
@@ -203,8 +205,8 @@ export default function ExperiencedFlow({ onNext, onBack, trackId }) {
     return (
       <div style={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)',
-        color: 'white',
+        background: theme.pageBg,
+        color: theme.textPrimary,
         fontFamily: 'var(--font-main)',
         display: 'flex',
         flexDirection: 'column',
@@ -216,9 +218,9 @@ export default function ExperiencedFlow({ onNext, onBack, trackId }) {
           <button 
             onClick={() => setCurrentSkillTest(null)}
             style={{
-              background: 'rgba(255,255,255,0.05)',
-              color: 'rgba(255,255,255,0.7)',
-              border: '1px solid rgba(255,255,255,0.1)',
+              background: theme.inputBg,
+              color: theme.textMuted,
+              border: `1px solid ${theme.border}`,
               padding: '10px 20px',
               borderRadius: '20px',
               cursor: 'pointer',
@@ -234,14 +236,14 @@ export default function ExperiencedFlow({ onNext, onBack, trackId }) {
             fontSize: '28px',
             fontWeight: '800',
             marginBottom: '16px',
-            color: '#FF6B35'
+            color: theme.accent
           }}>
             {skill?.name} Verification Test
           </h2>
           
           <p style={{
             fontSize: '16px',
-            color: 'rgba(255,255,255,0.6)',
+            color: theme.textMuted,
             maxWidth: '600px',
             margin: '0 auto'
           }}>
@@ -264,8 +266,8 @@ export default function ExperiencedFlow({ onNext, onBack, trackId }) {
           }}>
             {questions.map((question, qIndex) => (
               <div key={qIndex} style={{
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(255,255,255,0.08)',
+                background: theme.cardBg,
+                border: `1px solid ${theme.border}`,
                 borderRadius: '20px',
                 padding: '30px',
                 backdropFilter: 'blur(10px)'
@@ -274,7 +276,7 @@ export default function ExperiencedFlow({ onNext, onBack, trackId }) {
                   fontSize: '18px',
                   fontWeight: '700',
                   marginBottom: '20px',
-                  color: 'white'
+                  color: theme.textPrimary
                 }}>
                   Question {qIndex + 1}: {question.question}
                 </h4>
@@ -289,8 +291,8 @@ export default function ExperiencedFlow({ onNext, onBack, trackId }) {
                         cursor: 'pointer',
                         padding: '12px',
                         borderRadius: '12px',
-                        background: testAnswers[qIndex] === oIndex ? 'rgba(255,107,53,0.1)' : 'transparent',
-                        border: testAnswers[qIndex] === oIndex ? '1px solid rgba(255,107,53,0.3)' : '1px solid transparent'
+                        background: testAnswers[qIndex] === oIndex ? theme.inputBg : 'transparent',
+                        border: testAnswers[qIndex] === oIndex ? `1px solid ${theme.accent}` : '1px solid transparent'
                       }}>
                         <input
                           type="radio"
@@ -303,12 +305,12 @@ export default function ExperiencedFlow({ onNext, onBack, trackId }) {
                           width: '20px',
                           height: '20px',
                           borderRadius: '50%',
-                          border: '2px solid rgba(255,255,255,0.3)',
-                          background: testAnswers[qIndex] === oIndex ? '#FF6B35' : 'transparent',
+                          border: `2px solid ${theme.border}`,
+                          background: testAnswers[qIndex] === oIndex ? theme.accent : 'transparent',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          color: 'white',
+                          color: '#FFFFFF',
                           fontSize: '12px'
                         }}>
                           {testAnswers[qIndex] === oIndex && '✓'}
@@ -328,9 +330,9 @@ export default function ExperiencedFlow({ onNext, onBack, trackId }) {
                       width: '100%',
                       padding: '16px',
                       borderRadius: '12px',
-                      border: '1px solid rgba(255,255,255,0.2)',
-                      background: 'rgba(255,255,255,0.05)',
-                      color: 'white',
+                      border: `1px solid ${theme.border}`,
+                      background: theme.inputBg,
+                      color: theme.textPrimary,
                       fontSize: '16px',
                       fontFamily: 'inherit',
                       resize: 'vertical',
@@ -350,8 +352,8 @@ export default function ExperiencedFlow({ onNext, onBack, trackId }) {
             onClick={completeSkillTest}
             disabled={testAnswers.filter(a => a).length < questions.length}
             style={{
-              background: testAnswers.filter(a => a).length === questions.length ? '#FF6B35' : 'rgba(255,255,255,0.1)',
-              color: 'white',
+              background: testAnswers.filter(a => a).length === questions.length ? theme.accent : theme.border,
+              color: '#FFFFFF',
               border: 'none',
               padding: '16px 40px',
               borderRadius: '30px',
@@ -371,8 +373,8 @@ export default function ExperiencedFlow({ onNext, onBack, trackId }) {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)',
-      color: 'white',
+      background: theme.pageBg,
+      color: theme.textPrimary,
       fontFamily: 'var(--font-main)',
       display: 'flex',
       flexDirection: 'column',
@@ -384,9 +386,9 @@ export default function ExperiencedFlow({ onNext, onBack, trackId }) {
         <button 
           onClick={onBack}
           style={{
-            background: 'rgba(255,255,255,0.05)',
-            color: 'rgba(255,255,255,0.7)',
-            border: '1px solid rgba(255,255,255,0.1)',
+            background: theme.inputBg,
+            color: theme.textMuted,
+            border: `1px solid ${theme.border}`,
             padding: '10px 20px',
             borderRadius: '20px',
             cursor: 'pointer',
@@ -413,7 +415,7 @@ export default function ExperiencedFlow({ onNext, onBack, trackId }) {
         
         <p style={{
           fontSize: '18px',
-          color: 'rgba(255,255,255,0.6)',
+          color: theme.textMuted,
           maxWidth: '600px',
           margin: '0 auto',
           lineHeight: '1.6'
@@ -469,7 +471,7 @@ export default function ExperiencedFlow({ onNext, onBack, trackId }) {
                       fontSize: '18px',
                       fontWeight: '700',
                       marginBottom: '8px',
-                      color: isVerified ? '#2ECC71' : isFailed ? '#E74C3C' : 'white'
+                      color: isVerified ? theme.success : isFailed ? theme.error : theme.textPrimary
                     }}>
                       {skill.name}
                       {isVerified && ' ✅'}
@@ -477,7 +479,7 @@ export default function ExperiencedFlow({ onNext, onBack, trackId }) {
                     </h4>
                     <p style={{
                       fontSize: '14px',
-                      color: 'rgba(255,255,255,0.6)',
+                      color: theme.textMuted,
                       lineHeight: '1.5',
                       margin: 0
                     }}>
@@ -490,12 +492,12 @@ export default function ExperiencedFlow({ onNext, onBack, trackId }) {
                       width: '24px',
                       height: '24px',
                       borderRadius: '6px',
-                      border: '2px solid rgba(255,255,255,0.3)',
-                      background: isSelected ? '#FF6B35' : 'transparent',
+                      border: `2px solid ${theme.border}`,
+                      background: isSelected ? theme.accent : 'transparent',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      color: 'white',
+                      color: '#FFFFFF',
                       fontSize: '14px',
                       flexShrink: 0
                     }}>
@@ -511,9 +513,9 @@ export default function ExperiencedFlow({ onNext, onBack, trackId }) {
                       startSkillTest(skill.id);
                     }}
                     style={{
-                      background: 'rgba(255,107,53,0.2)',
-                      color: '#FF6B35',
-                      border: '1px solid rgba(255,107,53,0.4)',
+                      background: theme.inputBg,
+                      color: theme.accent,
+                      border: `1px solid ${theme.accent}`,
                       padding: '8px 16px',
                       borderRadius: '12px',
                       fontSize: '14px',
@@ -538,8 +540,8 @@ export default function ExperiencedFlow({ onNext, onBack, trackId }) {
           <button
             onClick={proceedToResults}
             style={{
-              background: '#FF6B35',
-              color: 'white',
+              background: theme.accent,
+              color: '#FFFFFF',
               border: 'none',
               padding: '16px 40px',
               borderRadius: '30px',

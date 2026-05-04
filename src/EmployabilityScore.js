@@ -56,23 +56,25 @@ const tasksBySkill = {
   ]
 };
 
-const categoryColors = {
-  Learning: '#3498DB',
-  Project: '#9B59B6',
-  Course: '#FF6B35',
-  Action: '#2ECC71',
-};
+const getCategoryColors = (theme) => ({
+  Learning: theme.accentLight,
+  Project: theme.accentHover,
+  Course: theme.accent,
+  Action: theme.success,
+});
 
-function getScoreLabel(score) {
-  if (score === 0) return { label: 'Not Started', color: '#888', emoji: '😴' };
-  if (score < 20) return { label: 'Just Beginning', color: '#E74C3C', emoji: '🌱' };
-  if (score < 40) return { label: 'Building Up', color: '#E67E22', emoji: '📚' };
-  if (score < 60) return { label: 'Getting There', color: '#F39C12', emoji: '🔥' };
-  if (score < 80) return { label: 'Almost Ready', color: '#27AE60', emoji: '💪' };
-  return { label: 'Job Ready!', color: '#2ECC71', emoji: '🚀' };
+function getScoreLabel(score, theme) {
+  if (score === 0) return { label: 'Not Started', color: theme.textMuted, emoji: '😴' };
+  if (score < 20) return { label: 'Just Beginning', color: theme.error, emoji: '🌱' };
+  if (score < 40) return { label: 'Building Up', color: theme.warning, emoji: '📚' };
+  if (score < 60) return { label: 'Getting There', color: theme.warning, emoji: '🔥' };
+  if (score < 80) return { label: 'Almost Ready', color: theme.success, emoji: '💪' };
+  return { label: 'Job Ready!', color: theme.success, emoji: '🚀' };
 }
 
-export default function EmployabilityScore({ userData, onBack, onNext, onProgressUpdate }) {
+const defaultTheme = { pageBg:'#1D2226', cardBg:'#1B1F23', inputBg:'#283039', border:'#38434F', textPrimary:'#E7E9EA', textMuted:'#B0B7BF', accent:'#0A66C2', accentHover:'#004182', accentLight:'#70B5F9', success:'#057642', warning:'#F5C518', error:'#CC1016' };
+
+export default function EmployabilityScore({ userData, onBack, onNext, onProgressUpdate, theme = defaultTheme }) {
   const skillName = userData?.skill?.title || 'default';
   const tasks = tasksBySkill[skillName] || tasksBySkill['default'];
   const totalPoints = tasks.reduce((sum, t) => sum + t.points, 0);
@@ -169,74 +171,74 @@ export default function EmployabilityScore({ userData, onBack, onNext, onProgres
     }, 4000);
   };
 
-  const { label, color, emoji } = getScoreLabel(animatedScore);
+  const { label, color, emoji } = getScoreLabel(animatedScore, theme);
   const circumference = 2 * Math.PI * 54;
   const strokeDash = circumference - (animatedScore / 100) * circumference;
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)', color: 'white', fontFamily: 'Arial, sans-serif', padding: '30px 20px' }}>
+    <div style={{ minHeight: '100vh', background: theme.pageBg, color: theme.textPrimary, fontFamily: 'Arial, sans-serif', padding: '30px 20px' }}>
       
       {/* EVIDENCE MODAL */}
       {evidenceModal && (
-        <div style={{ position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.8)', zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}>
-          <div style={{ background:'#121214', border:'1px solid #FF6B35', borderRadius:'24px', padding:'40px', maxWidth:'500px', width:'100%', textAlign:'center' }}>
+        <div style={{ position:'fixed', top:0, left:0, right:0, bottom:0, background: theme.pageBg, zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}>
+          <div style={{ background: theme.cardBg, border:`1px solid ${theme.accent}`, borderRadius:'24px', padding:'40px', maxWidth:'500px', width:'100%', textAlign:'center' }}>
             <div style={{ fontSize:'40px' }}>📁</div>
             <h3 style={{ fontSize:'22px', fontWeight:'bold', margin:'20px 0 10px' }}>Verify Action</h3>
-            <p style={{ color:'rgba(255,255,255,0.6)', fontSize:'14px', marginBottom:'24px' }}>Provide evidence for: <b>{evidenceModal.task}</b></p>
+            <p style={{ color: theme.textMuted, fontSize:'14px', marginBottom:'24px' }}>Provide evidence for: <b>{evidenceModal.task}</b></p>
             <input 
               type="text" 
               placeholder="Enter GitHub URL or Link to Proof..." 
               value={evidenceValue} 
               onChange={e => setEvidenceValue(e.target.value)}
-              style={{ width:'100%', padding:'14px', borderRadius:'12px', background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', color:'white', marginBottom:'24px' }}
+              style={{ width:'100%', padding:'14px', borderRadius:'12px', background: theme.inputBg, border:`1px solid ${theme.border}`, color: theme.textPrimary, marginBottom:'24px' }}
             />
             <div style={{ display:'flex', gap:'12px' }}>
-              <button onClick={() => setEvidenceModal(null)} style={{ flex:1, padding:'14px', borderRadius:'12px', background:'rgba(255,255,255,0.05)', border:'none', color:'white', cursor:'pointer' }}>Cancel</button>
-              <button onClick={handleSubmitEvidence} style={{ flex:1, padding:'14px', borderRadius:'12px', background:'#FF6B35', border:'none', color:'white', fontWeight:'bold', cursor:'pointer' }}>Submit Proof</button>
+              <button onClick={() => setEvidenceModal(null)} style={{ flex:1, padding:'14px', borderRadius:'12px', background: theme.inputBg, border:'none', color: theme.textPrimary, cursor:'pointer' }}>Cancel</button>
+              <button onClick={handleSubmitEvidence} style={{ flex:1, padding:'14px', borderRadius:'12px', background: theme.accent, border:'none', color: '#FFFFFF', fontWeight:'bold', cursor:'pointer' }}>Submit Proof</button>
             </div>
           </div>
         </div>
       )}
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px', maxWidth: '900px', margin: '0 auto 30px' }}>
-        <button onClick={onBack} style={{ background: 'transparent', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.2)', padding: '8px 18px', borderRadius: '20px', cursor: 'pointer', fontSize: '13px' }}>← Back</button>
-        <h1 style={{ color: '#FF6B35', fontSize: '22px', fontWeight: 'bold' }}>⚡ PathForge</h1>
+        <button onClick={onBack} style={{ background: 'transparent', color: theme.textMuted, border: `1px solid ${theme.border}`, padding: '8px 18px', borderRadius: '20px', cursor: 'pointer', fontSize: '13px' }}>← Back</button>
+        <h1 style={{ color: theme.accent, fontSize: '22px', fontWeight: 'bold' }}>⚡ PathForge</h1>
       </div>
 
       <div style={{ maxWidth: '900px', margin: '0 auto' }}>
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
           <h2 style={{ fontSize: '28px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '1px' }}>{userData?.name || 'Your'}'s Employability Dashboard</h2>
-          <div style={{ color: 'rgba(255,255,255,0.5)', marginTop: '8px' }}>🚀 {skillName} • 📍 Industry Ready</div>
+          <div style={{ color: theme.textMuted, marginTop: '8px' }}>🚀 {skillName} • 📍 Industry Ready</div>
         </div>
 
         {/* Score Card */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '40px' }}>
-          <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '24px', padding: '40px', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: '30px' }}>
+          <div style={{ background: theme.cardBg, borderRadius: '24px', padding: '40px', border: `1px solid ${theme.border}`, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: '30px' }}>
             <div style={{ position: 'relative', width: '120px', height: '120px' }}>
               <svg style={{ transform: 'rotate(-90deg)', width: '120px', height: '120px' }}>
-                <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="8" />
+                <circle cx="60" cy="60" r="54" fill="none" stroke={theme.border} strokeWidth="8" />
                 <circle cx="60" cy="60" r="54" fill="none" stroke={color} strokeWidth="8" strokeDasharray={circumference} strokeDashoffset={strokeDash} strokeLinecap="round" style={{ transition: 'stroke-dashoffset 0.5s ease' }} />
               </svg>
               <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
-                <div style={{ fontSize: '32px', fontWeight: '900', color: 'white' }}>{animatedScore}%</div>
+                <div style={{ fontSize: '32px', fontWeight: '900', color: theme.textPrimary }}>{animatedScore}%</div>
                 <div style={{ fontSize: '18px' }}>{emoji}</div>
               </div>
             </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '20px', fontWeight: '900', color: color, textTransform: 'uppercase' }}>{label}</div>
-              <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', marginTop: '4px' }}>Employability Score</div>
+              <div style={{ fontSize: '12px', color: theme.textMuted, marginTop: '4px' }}>Employability Score</div>
             </div>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px' }}>
             {[
-              { label: 'Tasks Completed', value: `${tasks.filter(t => effectiveCompleted[t.id]).length} / ${tasks.length}`, color: '#2ECC71' },
-              { label: 'Skill Track', value: skillName, color: '#9B59B6' },
-              { label: 'Learning Pct', value: `${learningPct}%`, color: '#3498DB' },
-              { label: 'Target Goal', value: 'Industry Ready', color: '#FF6B35' },
+              { label: 'Tasks Completed', value: `${tasks.filter(t => effectiveCompleted[t.id]).length} / ${tasks.length}`, color: theme.success },
+              { label: 'Skill Track', value: skillName, color: theme.accentHover },
+              { label: 'Learning Pct', value: `${learningPct}%`, color: theme.accentLight },
+              { label: 'Target Goal', value: 'Industry Ready', color: theme.accent },
             ].map((stat, i) => (
-              <div key={i} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '14px', padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)' }}>{stat.label}</span>
+              <div key={i} style={{ background: theme.cardBg, borderRadius: '14px', padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: `1px solid ${theme.border}` }}>
+                <span style={{ fontSize: '13px', color: theme.textMuted }}>{stat.label}</span>
                 <span style={{ fontSize: '13px', fontWeight: 'bold', color: stat.color }}>{stat.value}</span>
               </div>
             ))}
@@ -244,7 +246,7 @@ export default function EmployabilityScore({ userData, onBack, onNext, onProgres
         </div>
 
         {/* Checklist */}
-        <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '24px', padding: '30px', border: '1px solid rgba(255,255,255,0.05)' }}>
+        <div style={{ background: theme.cardBg, borderRadius: '24px', padding: '30px', border: `1px solid ${theme.border}` }}>
           <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             ✅ Your Action Checklist — earned through verification
           </h3>
@@ -256,25 +258,25 @@ export default function EmployabilityScore({ userData, onBack, onNext, onProgres
 
               return (
                 <div key={t.id} onClick={() => toggleTask(t)} style={{ 
-                  background: isDone ? 'rgba(46,204,113,0.05)' : 'rgba(255,255,255,0.02)', 
-                  borderRadius: '16px', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '16px', border: isDone ? '1px solid rgba(46,204,113,0.2)' : '1px solid rgba(255,255,255,0.05)', 
+                  background: isDone ? theme.inputBg : theme.cardBg, 
+                  borderRadius: '16px', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '16px', border: isDone ? `1px solid ${theme.success}` : `1px solid ${theme.border}`, 
                   cursor: isDone || isAuto || isVerifying ? 'default' : 'pointer', transition: 'all 0.2s', opacity: isVerifying ? 0.7 : 1
                 }}>
                   <div style={{ 
-                    width: '24px', height: '24px', borderRadius: '6px', border: `2px solid ${isDone ? '#2ECC71' : 'rgba(255,255,255,0.2)'}`, 
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', background: isDone ? '#2ECC71' : 'transparent', color: 'white', fontSize: '14px' 
+                    width: '24px', height: '24px', borderRadius: '6px', border: `2px solid ${isDone ? theme.success : theme.border}`, 
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', background: isDone ? theme.success : 'transparent', color: '#FFFFFF', fontSize: '14px' 
                   }}>
                     {isDone ? '✓' : ''}
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '14px', fontWeight: isDone ? 'bold' : 'normal', color: isDone ? 'white' : 'rgba(255,255,255,0.8)' }}>{t.task}</div>
-                    <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginTop: '2px' }}>
+                    <div style={{ fontSize: '14px', fontWeight: isDone ? 'bold' : 'normal', color: theme.textPrimary }}>{t.task}</div>
+                    <div style={{ fontSize: '11px', color: theme.textMuted, marginTop: '2px' }}>
                       {isVerifying
                         ? (t.category === 'Learning' ? '⏳ Engagement timer (~45s) — stay on this page…' : '🔍 AI Verifying your submission…')
                         : isAuto ? 'Auto-updated from module tests' : t.category === 'Learning' ? 'Click to start; completes after focused wait (anti-instant-check)' : 'Requires verification proof'}
                     </div>
                   </div>
-                  <div style={{ fontSize: '12px', fontWeight: 'bold', color: categoryColors[t.category] }}>+{t.points}pts</div>
+                  <div style={{ fontSize: '12px', fontWeight: 'bold', color: getCategoryColors(theme)[t.category] }}>+{t.points}pts</div>
                 </div>
               );
             })}
@@ -284,7 +286,7 @@ export default function EmployabilityScore({ userData, onBack, onNext, onProgres
         {onNext && (
           <div style={{ textAlign: 'center', marginTop: '24px' }}>
             <button onClick={onNext} style={{
-              background: '#FF6B35', color: 'white', border: 'none',
+              background: theme.accent, color: '#FFFFFF', border: 'none',
               padding: '14px 38px', borderRadius: '30px', fontSize: '16px',
               fontWeight: 'bold', cursor: 'pointer',
             }}>
@@ -296,12 +298,12 @@ export default function EmployabilityScore({ userData, onBack, onNext, onProgres
         {animatedScore >= 80 && (
           <div style={{
             marginTop: '20px', textAlign: 'center', padding: '20px',
-            background: 'rgba(46,204,113,0.1)', border: '1px solid rgba(46,204,113,0.3)',
+            background: theme.inputBg, border: `1px solid ${theme.success}`,
             borderRadius: '16px'
           }}>
             <div style={{ fontSize: '28px', marginBottom: '8px' }}>🎉</div>
-            <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#2ECC71' }}>You are Job Ready!</div>
-            <div style={{ color: 'rgba(255,255,255,0.5)', marginTop: '6px' }}>
+            <div style={{ fontSize: '18px', fontWeight: 'bold', color: theme.success }}>You are Job Ready!</div>
+            <div style={{ color: theme.textMuted, marginTop: '6px' }}>
               Your ATS resume is ready to download. Start applying now!
             </div>
           </div>

@@ -1,205 +1,1090 @@
-import React, { useRef, useState } from 'react';
-import html2canvas from 'html2canvas';
-import { jsPDF } from 'jspdf';
+import React, { useState, useRef, useEffect } from 'react';
 
-function toBulletLines(value) {
-  return value.split('\n').map((line) => line.replace(/^•\s*/, '').trim()).filter(Boolean);
-}
-
-export default function ATSResume({ userData, onBack }) {
-  const name = userData?.name || 'Your Name';
-  const skill = userData?.skill?.title || 'Software Development';
-  const city = userData?.city || 'India';
-  const experience = userData?.experience?.label || 'Beginner';
-  const email = userData?.email || '';
-  const phone = userData?.phone || '';
-  const currentYear = new Date().getFullYear();
-  const startYear = currentYear - 4;
-  const resumeRef = useRef(null);
-
-  function getDefaultSkills(track) {
-    const map = {
-      'Frontend Development': 'HTML, CSS, JavaScript, React.js, Tailwind CSS, Git, Responsive Design',
-      'Backend Development': 'Node.js, Express.js, Python, REST APIs, MongoDB, SQL, Git',
-      'Artificial Intelligence': 'Python, TensorFlow, PyTorch, Scikit-learn, NLP, Data Preprocessing',
-      'Data Science': 'Python, Pandas, NumPy, Matplotlib, SQL, Power BI, Machine Learning',
-      'Mobile Development': 'React Native, Flutter, Dart, Android SDK, Firebase, REST APIs',
-      'Cyber Security': 'Network Security, Ethical Hacking, Kali Linux, Wireshark, OWASP, Python',
-      'Cloud Computing': 'AWS, Azure, Docker, Kubernetes, CI/CD, Terraform, Linux',
-      'UI/UX Design': 'Figma, Adobe XD, Wireframing, Prototyping, User Research, Design Systems',
-    };
-    return map[track] || 'JavaScript, Python, Git, Problem Solving, Communication';
+const TEMPLATES = {
+  modern: {
+    name: 'Modern',
+    colors: { primary: '#2c3e50', secondary: '#3498db', accent: '#e74c3c' },
+    layout: 'two-column'
+  },
+  classic: {
+    name: 'Classic',
+    colors: { primary: '#2c3e50', secondary: '#7f8c8d', accent: '#34495e' },
+    layout: 'single-column'
+  },
+  creative: {
+    name: 'Creative',
+    colors: { primary: '#8e44ad', secondary: '#e67e22', accent: '#16a085' },
+    layout: 'sidebar'
   }
+};
 
-  function getDefaultProjects(track) {
-    const map = {
-      'Frontend Development': '• Portfolio Website — Built a responsive personal portfolio using React.js and Tailwind CSS\n• E-Commerce UI — Designed and developed a product listing page with cart functionality',
-      'Backend Development': '• REST API Server — Built a full CRUD API using Node.js, Express, and MongoDB\n• Authentication System — Implemented JWT-based login/signup with email verification',
-      'Artificial Intelligence': '• Sentiment Analyzer — Built an NLP model to classify tweet sentiments using Python & NLTK\n• Image Classifier — Trained a CNN model to classify handwritten digits (MNIST dataset)',
-      'Data Science': '• Sales Dashboard — Analyzed and visualized sales data using Python, Pandas & Power BI\n• Churn Prediction — Built an ML model to predict customer churn with 87% accuracy',
-      'Mobile Development': '• Task Manager App — Built a cross-platform task app using React Native with Firebase sync\n• Weather App — Developed a Flutter app with real-time weather using OpenWeather API',
-      'Cyber Security': '• Vulnerability Scanner — Built a Python tool to detect common web vulnerabilities\n• Network Packet Analyzer — Captured and analyzed network packets using Wireshark',
-      'Cloud Computing': '• AWS Deployment — Deployed a Node.js app on AWS EC2 with S3 storage and RDS\n• Docker Pipeline — Containerized a web app with Docker and set up CI/CD using GitHub Actions',
-      'UI/UX Design': '• E-Commerce App Redesign — Redesigned user flow and UI for a shopping app in Figma\n• Dashboard UI — Created a data dashboard wireframe and prototype for a SaaS product',
-    };
-    return map[track] || '• Project 1 — Description of your key project\n• Project 2 — Description of another project';
-  }
+const SKILL_LEVELS = ['Beginner', 'Intermediate', 'Advanced', 'Expert'];
 
-  function getDefaultCerts(track) {
-    const map = {
-      'Frontend Development': '• Meta Frontend Developer Certificate — Coursera\n• JavaScript Algorithms — freeCodeCamp',
-      'Backend Development': '• Node.js Developer Certificate — Udemy\n• MongoDB Developer — MongoDB University',
-      'Artificial Intelligence': '• Machine Learning Specialization — Andrew Ng, Coursera\n• Deep Learning Specialization — deeplearning.ai',
-      'Data Science': '• Google Data Analytics Certificate — Coursera\n• Python for Data Science — IBM, Coursera',
-      'Mobile Development': '• Flutter & Dart — Udemy\n• React Native — Meta, Coursera',
-      'Cyber Security': '• Certified Ethical Hacker (CEH) — EC-Council\n• CompTIA Security+ — CompTIA',
-      'Cloud Computing': '• AWS Cloud Practitioner — Amazon\n• Microsoft Azure Fundamentals — Microsoft',
-      'UI/UX Design': '• Google UX Design Certificate — Coursera\n• Figma UI Design — Udemy',
-    };
-    return map[track] || '• Relevant Certification — Platform';
-  }
-
-  const [resumeData, setResumeData] = useState({
-    name,
-    email,
-    phone,
-    city,
-    title: `${skill} Engineer`,
-    summary: `Motivated ${skill} enthusiast from ${city}, seeking opportunities to apply and grow technical skills. ${experience.includes('Intermediate') || experience.includes('Advanced') ? 'Experienced in building real-world projects.' : 'Eager to learn and contribute to impactful teams.'}`,
-    skills: getDefaultSkills(skill),
-    education: userData?.education || `B.Tech / B.E. — Computer Science\nYour University Name · ${startYear}–${currentYear}`,
-    projects: getDefaultProjects(skill),
-    certifications: getDefaultCerts(skill),
+function ATSResume({ userData, onBack, onProgressUpdate, theme }) {
+  const defaultTheme = {
+    pageBg: '#F3F2EF',
+    cardBg: '#FFFFFF',
+    inputBg: '#F9F9F9',
+    border: '#D0D0D0',
+    textPrimary: '#000000',
+    textMuted: '#666666',
+    accent: '#0A66C2',
+    accentHover: '#004182',
+    accentLight: '#0A66C2',
+    success: '#057642',
+    warning: '#B06B00',
+    error: '#CC1016',
+  };
+  const currentTheme = theme || defaultTheme;
+  const [formData, setFormData] = useState({
+    fullName: userData?.name || '',
+    email: userData?.email || '',
+    phone: userData?.phone || '',
+    location: userData?.city || '',
+    website: userData?.website || '',
+    linkedin: userData?.linkedin || '',
+    github: userData?.github || '',
+    summary: userData?.bio || '',
+    experience: userData?.experience || [],
+    education: userData?.education || [],
+    skills: userData?.skills || [],
+    projects: userData?.projects || [],
+    certifications: userData?.certifications || [],
+    languages: userData?.languages || []
   });
 
-  const [photo, setPhoto] = useState('');
-  const [downloading, setDownloading] = useState(false);
-  const update = (field, value) => setResumeData((prev) => ({ ...prev, [field]: value }));
+  const [selectedTemplate, setSelectedTemplate] = useState('modern');
+  const [isEditing, setIsEditing] = useState(true);
+  const [isPreviewing, setIsPreviewing] = useState(false);
+  const [autoSaveStatus, setAutoSaveStatus] = useState('');
+  const [resumeScore, setResumeScore] = useState(0);
+  const [validationErrors, setValidationErrors] = useState([]);
+  const fileInputRef = useRef(null);
 
-  const handlePhotoUpload = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => setPhoto(reader.result?.toString() || '');
-    reader.readAsDataURL(file);
-  };
-
-  const handleDownloadPDF = async () => {
-    if (!resumeRef.current) return;
-    setDownloading(true);
-    try {
-      const canvas = await html2canvas(resumeRef.current, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = pdfWidth;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
-
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pdfHeight;
-
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pdfHeight;
+  // Auto-save functionality
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (formData.fullName || formData.email) {
+        saveResumeData();
       }
-      pdf.save(`${resumeData.name.replace(/\s+/g, '_')}_Resume.pdf`);
-    } finally {
-      setDownloading(false);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [formData]);
+
+  // Validate and score resume
+  useEffect(() => {
+    validateResume();
+  }, [formData]);
+
+  const saveResumeData = async () => {
+    try {
+      if (onProgressUpdate) {
+        await onProgressUpdate({
+          resumeData: formData,
+          lastSaved: new Date().toISOString()
+        });
+      }
+      setAutoSaveStatus('Auto-saved');
+      setTimeout(() => setAutoSaveStatus(''), 2000);
+    } catch (error) {
+      console.error('Error saving resume:', error);
+      setAutoSaveStatus('Save failed');
+      setTimeout(() => setAutoSaveStatus(''), 2000);
     }
   };
 
-  const fieldStyle = {
-    width: '100%', padding: '12px 14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)',
-    background: 'rgba(255,255,255,0.06)', color: 'white', fontSize: '14px', outline: 'none',
-    boxSizing: 'border-box', fontFamily: 'Arial, sans-serif', resize: 'vertical',
+  const validateResume = () => {
+    const errors = [];
+    let score = 0;
+
+    if (!formData.fullName) errors.push('Full name is required');
+    else score += 10;
+    
+    if (!formData.email) errors.push('Email is required');
+    else score += 10;
+    
+    if (!formData.phone) errors.push('Phone is required');
+    else score += 10;
+    
+    if (!formData.summary || formData.summary.length < 50) {
+      errors.push('Professional summary should be at least 50 characters');
+    } else score += 15;
+    
+    if (formData.experience.length === 0) {
+      errors.push('Add at least one work experience');
+    } else score += 20;
+    
+    if (formData.education.length === 0) {
+      errors.push('Add at least one education entry');
+    } else score += 15;
+    
+    if (formData.skills.length === 0) {
+      errors.push('Add at least one skill');
+    } else score += 10;
+    
+    if (formData.projects.length > 0) score += 5;
+    if (formData.certifications.length > 0) score += 5;
+
+    setValidationErrors(errors);
+    setResumeScore(score);
   };
 
-  const sectionStyle = {
-    background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
-    borderRadius: '14px', padding: '20px', marginBottom: '16px',
+  const handleInputChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)', color: 'white', fontFamily: 'Arial, sans-serif', padding: '30px 20px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', maxWidth: '1160px', margin: '0 auto 24px' }}>
-        <button onClick={onBack} style={{ background: 'transparent', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.2)', padding: '8px 18px', borderRadius: '20px', cursor: 'pointer', fontSize: '13px' }}>← Back</button>
-        <h1 style={{ color: '#FF6B35', fontSize: '22px', fontWeight: 'bold' }}>⚡ PathForge</h1>
+  const addExperience = () => {
+    setFormData(prev => ({
+      ...prev,
+      experience: [...prev.experience, { 
+        company: '', 
+        position: '', 
+        duration: '', 
+        location: '',
+        description: '',
+        achievements: []
+      }]
+    }));
+  };
+
+  const updateExperience = (index, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      experience: prev.experience.map((exp, i) => 
+        i === index ? { ...exp, [field]: value } : exp
+      )
+    }));
+  };
+
+  const removeExperience = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      experience: prev.experience.filter((_, i) => i !== index)
+    }));
+  };
+
+  const addEducation = () => {
+    setFormData(prev => ({
+      ...prev,
+      education: [...prev.education, { 
+        institution: '', 
+        degree: '', 
+        field: '',
+        year: '',
+        gpa: '',
+        honors: ''
+      }]
+    }));
+  };
+
+  const updateEducation = (index, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      education: prev.education.map((edu, i) => 
+        i === index ? { ...edu, [field]: value } : edu
+      )
+    }));
+  };
+
+  const removeEducation = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      education: prev.education.filter((_, i) => i !== index)
+    }));
+  };
+
+  const addSkill = () => {
+    setFormData(prev => ({
+      ...prev,
+      skills: [...prev.skills, { name: '', level: 'Intermediate' }]
+    }));
+  };
+
+  const updateSkill = (index, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      skills: prev.skills.map((skill, i) => 
+        i === index ? { ...skill, [field]: value } : skill
+      )
+    }));
+  };
+
+  const removeSkill = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      skills: prev.skills.filter((_, i) => i !== index)
+    }));
+  };
+
+  const addProject = () => {
+    setFormData(prev => ({
+      ...prev,
+      projects: [...prev.projects, { 
+        name: '', 
+        description: '', 
+        technologies: [],
+        link: '',
+        duration: ''
+      }]
+    }));
+  };
+
+  const updateProject = (index, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      projects: prev.projects.map((project, i) => 
+        i === index ? { ...project, [field]: value } : project
+      )
+    }));
+  };
+
+  const removeProject = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      projects: prev.projects.filter((_, i) => i !== index)
+    }));
+  };
+
+  const addCertification = () => {
+    setFormData(prev => ({
+      ...prev,
+      certifications: [...prev.certifications, { 
+        name: '', 
+        issuer: '', 
+        date: '',
+        credentialId: '',
+        credentialUrl: ''
+      }]
+    }));
+  };
+
+  const updateCertification = (index, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      certifications: prev.certifications.map((cert, i) => 
+        i === index ? { ...cert, [field]: value } : cert
+      )
+    }));
+  };
+
+  const removeCertification = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      certifications: prev.certifications.filter((_, i) => i !== index)
+    }));
+  };
+
+  const addLanguage = () => {
+    setFormData(prev => ({
+      ...prev,
+      languages: [...prev.languages, { name: '', proficiency: 'Intermediate' }]
+    }));
+  };
+
+  const updateLanguage = (index, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      languages: prev.languages.map((lang, i) => 
+        i === index ? { ...lang, [field]: value } : lang
+      )
+    }));
+  };
+
+  const removeLanguage = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      languages: prev.languages.filter((_, i) => i !== index)
+    }));
+  };
+
+  const exportToPDF = () => {
+    window.print();
+  };
+
+  const exportToWord = () => {
+    alert('Word export feature coming soon! For now, use browser print (Ctrl+P)');
+  };
+
+  const renderTemplate = () => {
+    const template = TEMPLATES[selectedTemplate];
+    
+    if (template.layout === 'two-column') {
+      return renderModernTemplate();
+    } else if (template.layout === 'single-column') {
+      return renderClassicTemplate();
+    } else {
+      return renderCreativeTemplate();
+    }
+  };
+
+  const renderModernTemplate = () => (
+    <div style={{ background: 'white', color: 'black', padding: '40px', borderRadius: '12px', fontFamily: 'Arial, sans-serif' }}>
+      {/* Header */}
+      <div style={{ textAlign: 'center', marginBottom: '30px', borderBottom: '3px solid #3498db', paddingBottom: '20px' }}>
+        <h1 style={{ fontSize: '28px', fontWeight: 'bold', color: '#2c3e50', margin: '0 0 10px 0' }}>
+          {formData.fullName || 'Your Name'}
+        </h1>
+        <p style={{ color: '#7f8c8d', margin: '0 0 10px 0', fontSize: '14px' }}>
+          {formData.email} | {formData.phone} | {formData.location}
+        </p>
+        <p style={{ color: '#7f8c8d', margin: '0', fontSize: '12px' }}>
+          {formData.website && `${formData.website} | `}{formData.linkedin && `LinkedIn: ${formData.linkedin}`}
+        </p>
       </div>
 
-      <div style={{ maxWidth: '1160px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1.05fr 1fr', gap: '18px' }}>
-        <div>
-          <div style={sectionStyle}>
-            <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#FF6B35', marginBottom: '16px' }}>Resume Editor</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-              <input style={fieldStyle} value={resumeData.name} onChange={(e) => update('name', e.target.value)} placeholder="Full Name" />
-              <input style={fieldStyle} value={resumeData.title} onChange={(e) => update('title', e.target.value)} placeholder="Job Title" />
-              <input style={fieldStyle} type="email" value={resumeData.email} onChange={(e) => update('email', e.target.value)} placeholder="Email" />
-              <input style={fieldStyle} value={resumeData.phone} onChange={(e) => update('phone', e.target.value)} placeholder="Phone" />
-              <input style={{ ...fieldStyle, gridColumn: '1/-1' }} value={resumeData.city} onChange={(e) => update('city', e.target.value)} placeholder="City" />
+      <div style={{ display: 'flex', gap: '30px' }}>
+        {/* Left Column */}
+        <div style={{ flex: '2' }}>
+          {formData.summary && (
+            <div style={{ marginBottom: '25px' }}>
+              <h2 style={{ fontSize: '16px', fontWeight: 'bold', color: '#3498db', marginBottom: '10px' }}>
+                PROFESSIONAL SUMMARY
+              </h2>
+              <p style={{ color: '#34495e', lineHeight: '1.5', fontSize: '13px' }}>{formData.summary}</p>
             </div>
-            <div style={{ marginTop: '12px' }}>
-              <label style={{ fontSize: '12px', color: '#FF6B35', display: 'block', marginBottom: '6px' }}>Profile Photo</label>
-              <input type="file" accept="image/*" onChange={handlePhotoUpload} />
-            </div>
-          </div>
+          )}
 
-          <div style={sectionStyle}><textarea style={{ ...fieldStyle, minHeight: '84px' }} value={resumeData.summary} onChange={(e) => update('summary', e.target.value)} placeholder="Professional summary" /></div>
-          <div style={sectionStyle}><textarea style={{ ...fieldStyle, minHeight: '70px' }} value={resumeData.skills} onChange={(e) => update('skills', e.target.value)} placeholder="Skills separated by commas" /></div>
-          <div style={sectionStyle}><textarea style={{ ...fieldStyle, minHeight: '100px' }} value={resumeData.projects} onChange={(e) => update('projects', e.target.value)} placeholder="Projects (one per line with bullet)" /></div>
-          <div style={sectionStyle}><textarea style={{ ...fieldStyle, minHeight: '64px' }} value={resumeData.education} onChange={(e) => update('education', e.target.value)} placeholder="Education" /></div>
-          <div style={sectionStyle}><textarea style={{ ...fieldStyle, minHeight: '74px' }} value={resumeData.certifications} onChange={(e) => update('certifications', e.target.value)} placeholder="Certifications" /></div>
-          <button onClick={handleDownloadPDF} disabled={downloading} style={{ width: '100%', background: '#FF6B35', color: 'white', border: 'none', padding: '14px 20px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', opacity: downloading ? 0.75 : 1 }}>
-            {downloading ? 'Generating PDF...' : '⬇ Download Attractive Resume (PDF)'}
-          </button>
+          {formData.experience.length > 0 && (
+            <div style={{ marginBottom: '25px' }}>
+              <h2 style={{ fontSize: '16px', fontWeight: 'bold', color: '#3498db', marginBottom: '15px' }}>
+                PROFESSIONAL EXPERIENCE
+              </h2>
+              {formData.experience.map((exp, index) => (
+                <div key={index} style={{ marginBottom: '15px' }}>
+                  <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#2c3e50', margin: '0 0 5px 0' }}>
+                    {exp.position}
+                  </h3>
+                  <p style={{ color: '#7f8c8d', fontSize: '12px', margin: '0 0 5px 0', fontStyle: 'italic' }}>
+                    {exp.company} | {exp.location} | {exp.duration}
+                  </p>
+                  <p style={{ color: '#34495e', fontSize: '12px', lineHeight: '1.4' }}>{exp.description}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {formData.projects.length > 0 && (
+            <div style={{ marginBottom: '25px' }}>
+              <h2 style={{ fontSize: '16px', fontWeight: 'bold', color: '#3498db', marginBottom: '15px' }}>
+                PROJECTS
+              </h2>
+              {formData.projects.map((project, index) => (
+                <div key={index} style={{ marginBottom: '15px' }}>
+                  <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#2c3e50', margin: '0 0 5px 0' }}>
+                    {project.name}
+                  </h3>
+                  <p style={{ color: '#7f8c8d', fontSize: '12px', margin: '0 0 5px 0' }}>
+                    {project.duration}
+                  </p>
+                  <p style={{ color: '#34495e', fontSize: '12px', lineHeight: '1.4' }}>{project.description}</p>
+                  {project.technologies.length > 0 && (
+                    <p style={{ color: '#7f8c8d', fontSize: '11px', margin: '5px 0' }}>
+                      <strong>Technologies:</strong> {project.technologies.join(', ')}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        <div style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '12px' }}>
-          <div ref={resumeRef} style={{ width: '100%', background: 'white', color: '#111', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.15)' }}>
-            <div style={{ background: 'linear-gradient(120deg, #12203a, #1f4f94)', color: 'white', padding: '24px 26px', display: 'flex', justifyContent: 'space-between', gap: '16px' }}>
-              <div>
-                <div style={{ fontSize: '30px', fontWeight: 'bold', marginBottom: '4px' }}>{resumeData.name}</div>
-                <div style={{ fontSize: '14px', letterSpacing: '0.2px', opacity: 0.95 }}>{resumeData.title}</div>
-                <div style={{ fontSize: '12px', marginTop: '10px', opacity: 0.9 }}>
-                  {resumeData.email} | {resumeData.phone} | {resumeData.city}
+        {/* Right Column */}
+        <div style={{ flex: '1' }}>
+          {formData.skills.length > 0 && (
+            <div style={{ marginBottom: '25px' }}>
+              <h2 style={{ fontSize: '16px', fontWeight: 'bold', color: '#3498db', marginBottom: '10px' }}>
+                SKILLS
+              </h2>
+              {formData.skills.map((skill, index) => (
+                <div key={index} style={{ marginBottom: '8px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '12px', color: '#2c3e50' }}>{skill.name}</span>
+                    <span style={{ fontSize: '10px', color: '#7f8c8d' }}>{skill.level}</span>
+                  </div>
                 </div>
-              </div>
-              <div style={{ width: '88px', height: '88px', borderRadius: '50%', overflow: 'hidden', border: '3px solid rgba(255,255,255,0.65)', background: '#dbe7ff', flexShrink: 0 }}>
-                {photo ? (
-                  <img src={photo} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : (
-                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3f5f8f', fontWeight: 'bold', fontSize: '12px' }}>PHOTO</div>
-                )}
-              </div>
+              ))}
             </div>
+          )}
 
-            <div style={{ display: 'grid', gridTemplateColumns: '0.95fr 1.4fr' }}>
-              <div style={{ background: '#f4f7fc', padding: '18px 16px' }}>
-                <div style={{ fontWeight: 'bold', color: '#0f2e5c', marginBottom: '8px', fontSize: '13px' }}>Skills</div>
-                <div style={{ fontSize: '12px', lineHeight: 1.7 }}>{resumeData.skills.split(',').map((s) => s.trim()).filter(Boolean).map((skillItem, i) => <div key={i}>• {skillItem}</div>)}</div>
-                <div style={{ fontWeight: 'bold', color: '#0f2e5c', margin: '14px 0 8px', fontSize: '13px' }}>Certifications</div>
-                <div style={{ fontSize: '12px', lineHeight: 1.65 }}>{toBulletLines(resumeData.certifications).map((line, i) => <div key={i}>• {line}</div>)}</div>
-              </div>
-              <div style={{ padding: '18px 18px 20px' }}>
-                <div style={{ fontWeight: 'bold', color: '#143461', marginBottom: '6px', fontSize: '13px' }}>Professional Summary</div>
-                <div style={{ fontSize: '12px', lineHeight: 1.7, marginBottom: '12px' }}>{resumeData.summary}</div>
-
-                <div style={{ fontWeight: 'bold', color: '#143461', marginBottom: '6px', fontSize: '13px' }}>Projects</div>
-                <div style={{ fontSize: '12px', lineHeight: 1.7, marginBottom: '12px' }}>
-                  {toBulletLines(resumeData.projects).map((line, i) => <div key={i}>• {line}</div>)}
+          {formData.education.length > 0 && (
+            <div style={{ marginBottom: '25px' }}>
+              <h2 style={{ fontSize: '16px', fontWeight: 'bold', color: '#3498db', marginBottom: '10px' }}>
+                EDUCATION
+              </h2>
+              {formData.education.map((edu, index) => (
+                <div key={index} style={{ marginBottom: '15px' }}>
+                  <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#2c3e50', margin: '0 0 5px 0' }}>
+                    {edu.degree}
+                  </h3>
+                  <p style={{ color: '#7f8c8d', fontSize: '12px', margin: '0 0 5px 0' }}>
+                    {edu.institution}
+                  </p>
+                  <p style={{ color: '#7f8c8d', fontSize: '11px', margin: '0' }}>
+                    {edu.field && `${edu.field} | `}{edu.year}
+                  </p>
                 </div>
-
-                <div style={{ fontWeight: 'bold', color: '#143461', marginBottom: '6px', fontSize: '13px' }}>Education</div>
-                <div style={{ fontSize: '12px', lineHeight: 1.7, whiteSpace: 'pre-line' }}>{resumeData.education}</div>
-              </div>
+              ))}
             </div>
-          </div>
+          )}
+
+          {formData.certifications.length > 0 && (
+            <div style={{ marginBottom: '25px' }}>
+              <h2 style={{ fontSize: '16px', fontWeight: 'bold', color: '#3498db', marginBottom: '10px' }}>
+                CERTIFICATIONS
+              </h2>
+              {formData.certifications.map((cert, index) => (
+                <div key={index} style={{ marginBottom: '10px' }}>
+                  <h3 style={{ fontSize: '12px', fontWeight: 'bold', color: '#2c3e50', margin: '0 0 3px 0' }}>
+                    {cert.name}
+                  </h3>
+                  <p style={{ color: '#7f8c8d', fontSize: '10px', margin: '0' }}>
+                    {cert.issuer} | {cert.date}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {formData.languages.length > 0 && (
+            <div style={{ marginBottom: '25px' }}>
+              <h2 style={{ fontSize: '16px', fontWeight: 'bold', color: '#3498db', marginBottom: '10px' }}>
+                LANGUAGES
+              </h2>
+              {formData.languages.map((lang, index) => (
+                <div key={index} style={{ marginBottom: '5px' }}>
+                  <span style={{ fontSize: '12px', color: '#2c3e50' }}>
+                    {lang.name} - {lang.proficiency}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
+
+  const renderClassicTemplate = () => (
+    <div style={{ background: 'white', color: 'black', padding: '40px', borderRadius: '12px', fontFamily: 'Times New Roman, serif' }}>
+      {/* Classic single-column layout */}
+      <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+        <h1 style={{ fontSize: '32px', fontWeight: 'bold', color: '#2c3e50', margin: '0 0 10px 0' }}>
+          {formData.fullName || 'Your Name'}
+        </h1>
+        <p style={{ color: '#7f8c8d', margin: '0 0 10px 0', fontSize: '14px' }}>
+          {formData.email} | {formData.phone} | {formData.location}
+        </p>
+      </div>
+
+      {formData.summary && (
+        <div style={{ marginBottom: '25px' }}>
+          <h2 style={{ fontSize: '16px', fontWeight: 'bold', color: '#2c3e50', marginBottom: '10px', textTransform: 'uppercase' }}>
+            Professional Summary
+          </h2>
+          <p style={{ color: '#34495e', lineHeight: '1.5', fontSize: '13px' }}>{formData.summary}</p>
+        </div>
+      )}
+
+      {formData.experience.length > 0 && (
+        <div style={{ marginBottom: '25px' }}>
+          <h2 style={{ fontSize: '16px', fontWeight: 'bold', color: '#2c3e50', marginBottom: '15px', textTransform: 'uppercase' }}>
+            Experience
+          </h2>
+          {formData.experience.map((exp, index) => (
+            <div key={index} style={{ marginBottom: '15px' }}>
+              <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#2c3e50', margin: '0 0 5px 0' }}>
+                {exp.position} - {exp.company}
+              </h3>
+              <p style={{ color: '#7f8c8d', fontSize: '12px', margin: '0 0 5px 0', fontStyle: 'italic' }}>
+                {exp.duration}
+              </p>
+              <p style={{ color: '#34495e', fontSize: '12px', lineHeight: '1.4' }}>{exp.description}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {formData.education.length > 0 && (
+        <div style={{ marginBottom: '25px' }}>
+          <h2 style={{ fontSize: '16px', fontWeight: 'bold', color: '#2c3e50', marginBottom: '15px', textTransform: 'uppercase' }}>
+            Education
+          </h2>
+          {formData.education.map((edu, index) => (
+            <div key={index} style={{ marginBottom: '10px' }}>
+              <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#2c3e50', margin: '0 0 5px 0' }}>
+                {edu.degree}
+              </h3>
+              <p style={{ color: '#7f8c8d', fontSize: '12px', margin: '0' }}>
+                {edu.institution} - {edu.year}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {formData.skills.length > 0 && (
+        <div style={{ marginBottom: '25px' }}>
+          <h2 style={{ fontSize: '16px', fontWeight: 'bold', color: '#2c3e50', marginBottom: '10px', textTransform: 'uppercase' }}>
+            Skills
+          </h2>
+          <p style={{ color: '#34495e', fontSize: '12px' }}>
+            {formData.skills.map(skill => skill.name).join(', ')}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderCreativeTemplate = () => (
+    <div style={{ background: 'white', color: 'black', borderRadius: '12px', fontFamily: 'Arial, sans-serif', display: 'flex' }}>
+      {/* Sidebar */}
+      <div style={{ background: '#8e44ad', color: 'white', padding: '30px', width: '250px', borderRadius: '12px 0 0 12px' }}>
+        <h1 style={{ fontSize: '24px', fontWeight: 'bold', margin: '0 0 20px 0' }}>
+          {formData.fullName || 'Your Name'}
+        </h1>
+        
+        <div style={{ marginBottom: '30px' }}>
+          <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '10px', textTransform: 'uppercase' }}>Contact</h3>
+          <p style={{ fontSize: '12px', margin: '5px 0' }}>{formData.email}</p>
+          <p style={{ fontSize: '12px', margin: '5px 0' }}>{formData.phone}</p>
+          <p style={{ fontSize: '12px', margin: '5px 0' }}>{formData.location}</p>
+        </div>
+
+        {formData.skills.length > 0 && (
+          <div style={{ marginBottom: '30px' }}>
+            <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '10px', textTransform: 'uppercase' }}>Skills</h3>
+            {formData.skills.map((skill, index) => (
+              <div key={index} style={{ marginBottom: '8px' }}>
+                <div style={{ fontSize: '12px', fontWeight: 'bold' }}>{skill.name}</div>
+                <div style={{ background: 'rgba(255,255,255,0.3)', height: '4px', borderRadius: '2px', marginTop: '3px' }}>
+                  <div style={{ 
+                    background: '#16a085', 
+                    height: '100%', 
+                    borderRadius: '2px',
+                    width: `${(SKILL_LEVELS.indexOf(skill.level) + 1) * 25}%`
+                  }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {formData.languages.length > 0 && (
+          <div style={{ marginBottom: '30px' }}>
+            <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '10px', textTransform: 'uppercase' }}>Languages</h3>
+            {formData.languages.map((lang, index) => (
+              <p key={index} style={{ fontSize: '12px', margin: '5px 0' }}>
+                {lang.name} - {lang.proficiency}
+              </p>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Main Content */}
+      <div style={{ flex: '1', padding: '30px' }}>
+        {formData.summary && (
+          <div style={{ marginBottom: '25px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#8e44ad', marginBottom: '10px' }}>
+              About Me
+            </h2>
+            <p style={{ color: '#34495e', lineHeight: '1.5', fontSize: '13px' }}>{formData.summary}</p>
+          </div>
+        )}
+
+        {formData.experience.length > 0 && (
+          <div style={{ marginBottom: '25px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#8e44ad', marginBottom: '15px' }}>
+              Experience
+            </h2>
+            {formData.experience.map((exp, index) => (
+              <div key={index} style={{ marginBottom: '15px', borderLeft: '3px solid #e67e22', paddingLeft: '15px' }}>
+                <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#2c3e50', margin: '0 0 5px 0' }}>
+                  {exp.position}
+                </h3>
+                <p style={{ color: '#e67e22', fontSize: '12px', margin: '0 0 5px 0', fontWeight: 'bold' }}>
+                  {exp.company} | {exp.duration}
+                </p>
+                <p style={{ color: '#34495e', fontSize: '12px', lineHeight: '1.4' }}>{exp.description}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {formData.education.length > 0 && (
+          <div style={{ marginBottom: '25px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#8e44ad', marginBottom: '15px' }}>
+              Education
+            </h2>
+            {formData.education.map((edu, index) => (
+              <div key={index} style={{ marginBottom: '10px' }}>
+                <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#2c3e50', margin: '0 0 5px 0' }}>
+                  {edu.degree}
+                </h3>
+                <p style={{ color: '#7f8c8d', fontSize: '12px', margin: '0' }}>
+                  {edu.institution} | {edu.year}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  const inputStyle = {
+    width: '100%',
+    padding: '12px',
+    marginBottom: '8px',
+    border: '1px solid ' + currentTheme.border,
+    borderRadius: '8px',
+    background: currentTheme.inputBg,
+    color: currentTheme.textPrimary,
+    fontSize: '14px',
+    outline: 'none',
+    boxSizing: 'border-box',
+  };
+
+  const sectionStyle = {
+    background: currentTheme.cardBg,
+    border: '1px solid ' + currentTheme.border,
+    borderRadius: '12px',
+    padding: '20px',
+    marginBottom: '20px'
+  };
+
+  return (
+    <div style={{ minHeight: '100vh', background: currentTheme.pageBg, color: currentTheme.textPrimary, padding: '20px' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+          <div>
+            <h1 style={{ fontSize: '28px', fontWeight: 'bold', color: currentTheme.accent, margin: '0 0 5px 0' }}>
+              Advanced ATS Resume Builder
+            </h1>
+            <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '14px', color: currentTheme.textMuted }}>Resume Score:</span>
+                <span style={{ 
+                  fontSize: '16px', 
+                  fontWeight: 'bold', 
+                  color: resumeScore >= 80 ? currentTheme.success : resumeScore >= 60 ? currentTheme.warning : currentTheme.error 
+                }}>
+                  {resumeScore}/100
+                </span>
+              </div>
+              {autoSaveStatus && (
+                <span style={{ fontSize: '12px', color: currentTheme.success }}>{autoSaveStatus}</span>
+              )}
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button
+              onClick={() => setIsEditing(!isEditing)}
+              style={{
+                background: isEditing ? currentTheme.success : currentTheme.accent,
+                color: 'white',
+                border: 'none',
+                padding: '10px 20px',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontWeight: 'bold'
+              }}
+            >
+              {isEditing ? 'Preview' : 'Edit'}
+            </button>
+            <button
+              onClick={onBack}
+              style={{
+                background: 'transparent',
+                color: currentTheme.textMuted,
+                border: `1px solid ${currentTheme.border}`,
+                padding: '10px 20px',
+                borderRadius: '8px',
+                cursor: 'pointer'
+              }}
+            >
+              Back
+            </button>
+          </div>
+        </div>
+
+        {/* Validation Errors */}
+        {validationErrors.length > 0 && (
+          <div style={{
+            background: currentTheme.error + '20',
+            border: '1px solid ' + currentTheme.error + '4D',
+            borderRadius: '8px',
+            padding: '15px',
+            marginBottom: '20px'
+          }}>
+            <h3 style={{ color: currentTheme.error, fontSize: '14px', margin: '0 0 10px 0' }}>Please fix these issues:</h3>
+            <ul style={{ margin: '0', paddingLeft: '20px' }}>
+              {validationErrors.map((error, index) => (
+                <li key={index} style={{ color: currentTheme.error, fontSize: '12px', marginBottom: '5px' }}>{error}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {isEditing ? (
+          /* Edit Mode */
+          <div style={{ display: 'flex', gap: '20px' }}>
+            {/* Left Column */}
+            <div style={{ flex: '1' }}>
+              {/* Template Selection */}
+              <div style={sectionStyle}>
+                <h2 style={{ fontSize: '18px', marginBottom: '15px', color: currentTheme.accent }}>Choose Template</h2>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  {Object.entries(TEMPLATES).map(([key, template]) => (
+                    <button
+                      key={key}
+                      onClick={() => setSelectedTemplate(key)}
+                      style={{
+                        background: selectedTemplate === key ? currentTheme.accent : currentTheme.inputBg,
+                        color: '#FFFFFF',
+                        border: `1px solid ${currentTheme.border}`,
+                        padding: '8px 16px',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '12px'
+                      }}
+                    >
+                      {template.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Personal Information */}
+              <div style={sectionStyle}>
+                <h2 style={{ fontSize: '18px', marginBottom: '15px', color: currentTheme.accent }}>Personal Information</h2>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  <input
+                    style={inputStyle}
+                    placeholder="Full Name *"
+                    value={formData.fullName}
+                    onChange={(e) => handleInputChange('fullName', e.target.value)}
+                  />
+                  <input
+                    style={inputStyle}
+                    placeholder="Email *"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                  />
+                  <input
+                    style={inputStyle}
+                    placeholder="Phone *"
+                    value={formData.phone}
+                    onChange={(e) => handleInputChange('phone', e.target.value)}
+                  />
+                  <input
+                    style={inputStyle}
+                    placeholder="Location"
+                    value={formData.location}
+                    onChange={(e) => handleInputChange('location', e.target.value)}
+                  />
+                  <input
+                    style={inputStyle}
+                    placeholder="Website"
+                    value={formData.website}
+                    onChange={(e) => handleInputChange('website', e.target.value)}
+                  />
+                  <input
+                    style={inputStyle}
+                    placeholder="LinkedIn"
+                    value={formData.linkedin}
+                    onChange={(e) => handleInputChange('linkedin', e.target.value)}
+                  />
+                </div>
+                <textarea
+                  style={{ ...inputStyle, minHeight: '100px' }}
+                  placeholder="Professional Summary (min 50 characters) *"
+                  value={formData.summary}
+                  onChange={(e) => handleInputChange('summary', e.target.value)}
+                />
+              </div>
+
+              {/* Experience */}
+              <div style={sectionStyle}>
+                <h2 style={{ fontSize: '18px', marginBottom: '15px', color: currentTheme.accent }}>Work Experience</h2>
+                {formData.experience.map((exp, index) => (
+                  <div key={index} style={{ background: currentTheme.inputBg, padding: '15px', borderRadius: '8px', marginBottom: '10px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                      <input
+                        style={{ ...inputStyle, marginBottom: '8px' }}
+                        placeholder="Position"
+                        value={exp.position}
+                        onChange={(e) => updateExperience(index, 'position', e.target.value)}
+                      />
+                      <input
+                        style={{ ...inputStyle, marginBottom: '8px' }}
+                        placeholder="Company"
+                        value={exp.company}
+                        onChange={(e) => updateExperience(index, 'company', e.target.value)}
+                      />
+                      <input
+                        style={{ ...inputStyle, marginBottom: '8px' }}
+                        placeholder="Duration (e.g., Jan 2020 - Present)"
+                        value={exp.duration}
+                        onChange={(e) => updateExperience(index, 'duration', e.target.value)}
+                      />
+                      <input
+                        style={{ ...inputStyle, marginBottom: '8px' }}
+                        placeholder="Location"
+                        value={exp.location}
+                        onChange={(e) => updateExperience(index, 'location', e.target.value)}
+                      />
+                    </div>
+                    <textarea
+                      style={{ ...inputStyle, minHeight: '80px' }}
+                      placeholder="Job description and achievements..."
+                      value={exp.description}
+                      onChange={(e) => updateExperience(index, 'description', e.target.value)}
+                    />
+                    <button
+                      onClick={() => removeExperience(index)}
+                      style={{
+                        background: currentTheme.error,
+                        color: 'white',
+                        border: 'none',
+                        padding: '8px 16px',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '12px',
+                        marginTop: '8px'
+                      }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+                <button
+                  onClick={addExperience}
+                  style={{
+                    background: currentTheme.accentLight,
+                    color: '#FFFFFF',
+                    border: 'none',
+                    padding: '10px 20px',
+                    borderRadius: '8px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Add Experience
+                </button>
+              </div>
+            </div>
+
+            {/* Right Column */}
+            <div style={{ flex: '1' }}>
+              {/* Education */}
+              <div style={sectionStyle}>
+                <h2 style={{ fontSize: '18px', marginBottom: '15px', color: currentTheme.accent }}>Education</h2>
+                {formData.education.map((edu, index) => (
+                  <div key={index} style={{ background: currentTheme.inputBg, padding: '15px', borderRadius: '8px', marginBottom: '10px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                      <input
+                        style={{ ...inputStyle, marginBottom: '8px' }}
+                        placeholder="Degree"
+                        value={edu.degree}
+                        onChange={(e) => updateEducation(index, 'degree', e.target.value)}
+                      />
+                      <input
+                        style={{ ...inputStyle, marginBottom: '8px' }}
+                        placeholder="Institution"
+                        value={edu.institution}
+                        onChange={(e) => updateEducation(index, 'institution', e.target.value)}
+                      />
+                      <input
+                        style={{ ...inputStyle, marginBottom: '8px' }}
+                        placeholder="Field of Study"
+                        value={edu.field}
+                        onChange={(e) => updateEducation(index, 'field', e.target.value)}
+                      />
+                      <input
+                        style={{ ...inputStyle, marginBottom: '8px' }}
+                        placeholder="Year"
+                        value={edu.year}
+                        onChange={(e) => updateEducation(index, 'year', e.target.value)}
+                      />
+                    </div>
+                    <button
+                      onClick={() => removeEducation(index)}
+                      style={{
+                        background: currentTheme.error,
+                        color: 'white',
+                        border: 'none',
+                        padding: '8px 16px',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '12px',
+                        marginTop: '8px'
+                      }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+                <button
+                  onClick={addEducation}
+                  style={{
+                    background: currentTheme.accentLight,
+                    color: '#FFFFFF',
+                    border: 'none',
+                    padding: '10px 20px',
+                    borderRadius: '8px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Add Education
+                </button>
+              </div>
+
+              {/* Skills */}
+              <div style={sectionStyle}>
+                <h2 style={{ fontSize: '18px', marginBottom: '15px', color: currentTheme.accent }}>Skills</h2>
+                {formData.skills.map((skill, index) => (
+                  <div key={index} style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                    <input
+                      style={{ ...inputStyle, marginBottom: '0', flex: '2' }}
+                      placeholder="Skill name"
+                      value={skill.name}
+                      onChange={(e) => updateSkill(index, 'name', e.target.value)}
+                    />
+                    <select
+                      style={{ ...inputStyle, marginBottom: '0', flex: '1' }}
+                      value={skill.level}
+                      onChange={(e) => updateSkill(index, 'level', e.target.value)}
+                    >
+                      {SKILL_LEVELS.map(level => (
+                        <option key={level} value={level} style={{ background: currentTheme.cardBg }}>{level}</option>
+                      ))}
+                    </select>
+                    <button
+                      onClick={() => removeSkill(index)}
+                      style={{
+                        background: currentTheme.error,
+                        color: 'white',
+                        border: 'none',
+                        padding: '8px 16px',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '12px'
+                      }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+                <button
+                  onClick={addSkill}
+                  style={{
+                    background: currentTheme.accentLight,
+                    color: '#FFFFFF',
+                    border: 'none',
+                    padding: '10px 20px',
+                    borderRadius: '8px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Add Skill
+                </button>
+              </div>
+
+              {/* Projects */}
+              <div style={sectionStyle}>
+                <h2 style={{ fontSize: '18px', marginBottom: '15px', color: currentTheme.accent }}>Projects</h2>
+                {formData.projects.map((project, index) => (
+                  <div key={index} style={{ background: currentTheme.inputBg, padding: '15px', borderRadius: '8px', marginBottom: '10px' }}>
+                    <input
+                      style={{ ...inputStyle, marginBottom: '8px' }}
+                      placeholder="Project Name"
+                      value={project.name}
+                      onChange={(e) => updateProject(index, 'name', e.target.value)}
+                    />
+                    <textarea
+                      style={{ ...inputStyle, minHeight: '60px' }}
+                      placeholder="Project description..."
+                      value={project.description}
+                      onChange={(e) => updateProject(index, 'description', e.target.value)}
+                    />
+                    <button
+                      onClick={() => removeProject(index)}
+                      style={{
+                        background: currentTheme.error,
+                        color: 'white',
+                        border: 'none',
+                        padding: '8px 16px',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '12px',
+                        marginTop: '8px'
+                      }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+                <button
+                  onClick={addProject}
+                  style={{
+                    background: currentTheme.accentLight,
+                    color: '#FFFFFF',
+                    border: 'none',
+                    padding: '10px 20px',
+                    borderRadius: '8px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Add Project
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* Preview Mode */
+          <div>
+            {/* Export Options */}
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', justifyContent: 'center' }}>
+              <button
+                onClick={exportToPDF}
+                style={{
+                  background: currentTheme.accent,
+                  color: '#FFFFFF',
+                  border: 'none',
+                  padding: '12px 24px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold'
+                }}
+              >
+                📄 Export to PDF
+              </button>
+              <button
+                onClick={exportToWord}
+                style={{
+                  background: currentTheme.accentLight,
+                  color: '#FFFFFF',
+                  border: 'none',
+                  padding: '12px 24px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold'
+                }}
+              >
+                📝 Export to Word
+              </button>
+            </div>
+
+            {/* Resume Preview */}
+            {renderTemplate()}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
+
+export default ATSResume;

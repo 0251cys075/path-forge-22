@@ -12,7 +12,7 @@ export const useTheme = () => {
 
 export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState('dark');
-  const [primaryColor, setPrimaryColor] = useState('#FF6B35');
+  const [primaryColor, setPrimaryColor] = useState('#0A66C2');
   const [fontSize, setFontSize] = useState('medium');
   const [animationsEnabled, setAnimationsEnabled] = useState(true);
 

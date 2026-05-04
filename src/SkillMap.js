@@ -166,13 +166,28 @@ function getStatus(node, expId, isSkilled) {
 }
 
 const statusConfig = {
-  you:      { color: '#FF6B35', radius: 28 },
-  known:    { color: '#2ECC71', radius: 20 },
-  learning: { color: '#F39C12', radius: 20 },
-  gap:      { color: '#E74C3C', radius: 20 },
+  you:      { color: currentTheme.accent, radius: 28 },
+  known:    { color: currentTheme.success, radius: 20 },
+  learning: { color: currentTheme.warning, radius: 20 },
+  gap:      { color: currentTheme.error, radius: 20 },
 };
 
-export default function SkillMap({ userData, onBack, onNext }) {
+export default function SkillMap({ userData, onBack, onNext, theme }) {
+  const defaultTheme = {
+    pageBg: '#1D2226',
+    cardBg: '#1B1F23',
+    inputBg: '#283039',
+    border: '#38434F',
+    textPrimary: '#E7E9EA',
+    textMuted: '#B0B7BF',
+    accent: '#0A66C2',
+    accentHover: '#004182',
+    accentLight: '#70B5F9',
+    success: '#057642',
+    warning: '#F5C518',
+    error: '#CC1016',
+  };
+  const currentTheme = theme || defaultTheme;
   const svgRef = useRef(null);
   const skillName = userData?.skill?.title || 'default';
   const expId     = userData?.experience?.id || 'beginner';
@@ -248,7 +263,7 @@ export default function SkillMap({ userData, onBack, onNext }) {
 
     const link = svg.append('g').selectAll('line')
       .data(links).join('line')
-      .attr('stroke', 'rgba(255,255,255,0.12)')
+      .attr('stroke', currentTheme.border)
       .attr('stroke-width', 1.5);
 
     const node = svg.append('g').selectAll('g')
@@ -277,7 +292,7 @@ export default function SkillMap({ userData, onBack, onNext }) {
       .text(d => d.label)
       .attr('text-anchor', 'middle')
       .attr('dy', '0.35em')
-      .attr('fill', 'white')
+      .attr('fill', currentTheme.textPrimary)
       .attr('font-size', d => d.status === 'you' ? '11px' : '10px')
       .attr('font-weight', d => d.status === 'you' ? 'bold' : 'normal')
       .attr('pointer-events', 'none');
@@ -295,18 +310,18 @@ export default function SkillMap({ userData, onBack, onNext }) {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)',
-      color: 'white',
+      background: currentTheme.pageBg,
+      color: currentTheme.textPrimary,
       fontFamily: 'Arial, sans-serif',
       padding: '30px 20px',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px', maxWidth: '900px', margin: '0 auto 24px' }}>
         <button onClick={onBack} style={{
-          background: 'transparent', color: 'rgba(255,255,255,0.6)',
-          border: '1px solid rgba(255,255,255,0.2)', padding: '8px 18px',
+          background: 'transparent', color: currentTheme.textMuted,
+          border: `1px solid ${currentTheme.border}`, padding: '8px 18px',
           borderRadius: '20px', cursor: 'pointer', fontSize: '13px'
         }}>← Back</button>
-        <h1 style={{ color: '#FF6B35', fontSize: '22px', fontWeight: 'bold' }}>⚡ PathForge</h1>
+        <h1 style={{ color: currentTheme.accent, fontSize: '22px', fontWeight: 'bold' }}>⚡ PathForge</h1>
       </div>
 
       <div style={{ maxWidth: '900px', margin: '0 auto' }}>
@@ -315,19 +330,19 @@ export default function SkillMap({ userData, onBack, onNext }) {
           <h2 style={{ fontSize: '26px', fontWeight: 'bold' }}>
             🧬 {userData?.name || 'User'}'s Skill DNA Map
           </h2>
-          <p style={{ color: 'rgba(255,255,255,0.5)', marginTop: '6px' }}>
+          <p style={{ color: currentTheme.textMuted, marginTop: '6px' }}>
             {userData?.skill?.icon} {skillName} · Level: {userData?.experience?.label} · Drag nodes to explore
           </p>
         </div>
 
         {/* Readiness Status Card */}
         <div style={{
-          background: readiness.status === 'ready' ? 'rgba(46,204,113,0.1)' : 
-                     readiness.status === 'in_progress' ? 'rgba(243,156,18,0.1)' : 
-                     'rgba(231,76,60,0.1)',
-          border: readiness.status === 'ready' ? '1px solid rgba(46,204,113,0.3)' : 
-                  readiness.status === 'in_progress' ? '1px solid rgba(243,156,18,0.3)' : 
-                  '1px solid rgba(231,76,60,0.3)',
+          background: readiness.status === 'ready' ? currentTheme.success + '1A' : 
+                     readiness.status === 'in_progress' ? currentTheme.warning + '1A' : 
+                     currentTheme.error + '1A',
+          border: readiness.status === 'ready' ? `1px solid ${currentTheme.success}4D` : 
+                  readiness.status === 'in_progress' ? `1px solid ${currentTheme.warning}4D` : 
+                  `1px solid ${currentTheme.error}4D`,
           borderRadius: '16px', padding: '24px', marginBottom: '24px',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
@@ -336,14 +351,14 @@ export default function SkillMap({ userData, onBack, onNext }) {
                 fontSize: '20px', 
                 fontWeight: 'bold', 
                 margin: 0,
-                color: readiness.status === 'ready' ? '#2ECC71' : 
-                       readiness.status === 'in_progress' ? '#F39C12' : '#E74C3C'
+                color: readiness.status === 'ready' ? currentTheme.success : 
+                       readiness.status === 'in_progress' ? currentTheme.warning : currentTheme.error
               }}>
                 {readiness.status === 'ready' ? '✅ Ready for Opportunities' : 
                  readiness.status === 'in_progress' ? '📚 In Progress' : 
                  '❌ Not Ready Yet'}
               </h3>
-              <p style={{ color: 'rgba(255,255,255,0.7)', margin: '4px 0 0 0', fontSize: '14px' }}>
+              <p style={{ color: currentTheme.textMuted, margin: '4px 0 0 0', fontSize: '14px' }}>
                 {readiness.message}
               </p>
             </div>
@@ -351,24 +366,24 @@ export default function SkillMap({ userData, onBack, onNext }) {
               <div style={{ 
                 fontSize: '32px', 
                 fontWeight: 'bold',
-                color: readiness.status === 'ready' ? '#2ECC71' : 
-                       readiness.status === 'in_progress' ? '#F39C12' : '#E74C3C'
+                color: readiness.status === 'ready' ? currentTheme.success : 
+                       readiness.status === 'in_progress' ? currentTheme.warning : currentTheme.error
               }}>
                 {readiness.percentage}%
               </div>
-              <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>Complete</div>
+              <div style={{ fontSize: '12px', color: currentTheme.textMuted }}>Complete</div>
             </div>
           </div>
           
           {/* Progress Bar */}
           <div style={{
-            width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)',
+            width: '100%', height: '8px', background: currentTheme.border,
             borderRadius: '4px', overflow: 'hidden', marginBottom: '16px'
           }}>
             <div style={{
               width: `${readiness.percentage}%`, height: '100%',
-              background: readiness.status === 'ready' ? '#2ECC71' : 
-                         readiness.status === 'in_progress' ? '#F39C12' : '#E74C3C',
+              background: readiness.status === 'ready' ? currentTheme.success : 
+                         readiness.status === 'in_progress' ? currentTheme.warning : currentTheme.error,
               borderRadius: '4px', transition: 'width 0.3s ease'
             }} />
           </div>
@@ -376,10 +391,10 @@ export default function SkillMap({ userData, onBack, onNext }) {
           {/* Completion Guidance */}
           {readiness.status === 'not_ready' && (
             <div style={{ fontSize: '14px', lineHeight: '1.6' }}>
-              <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#E74C3C' }}>
+              <div style={{ fontWeight: 'bold', marginBottom: '8px', color: currentTheme.error }}>
                 🎯 To get ready, complete these steps:
               </div>
-              <div style={{ color: 'rgba(255,255,255,0.7)' }}>
+              <div style={{ color: currentTheme.textMuted }}>
                 {!userData?.onboardingCompleted && (
                   <div style={{ marginBottom: '8px' }}>
                     1️⃣ <strong>Complete Onboarding Quiz</strong> - Take the skill assessment to personalize your journey
@@ -395,7 +410,7 @@ export default function SkillMap({ userData, onBack, onNext }) {
                     3️⃣ <strong>Set Experience Level</strong> - Define your current skill level
                   </div>
                 )}
-                <div style={{ marginTop: '12px', padding: '12px', background: 'rgba(255,107,53,0.1)', borderRadius: '8px' }}>
+                <div style={{ marginTop: '12px', padding: '12px', background: currentTheme.accent + '1A', borderRadius: '8px' }}>
                   💡 <strong>Quick Start:</strong> Click "Start Your Journey" on the home page to begin the onboarding process
                 </div>
               </div>
@@ -404,17 +419,17 @@ export default function SkillMap({ userData, onBack, onNext }) {
 
           {readiness.status === 'in_progress' && (
             <div style={{ fontSize: '14px', lineHeight: '1.6' }}>
-              <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#F39C12' }}>
+              <div style={{ fontWeight: 'bold', marginBottom: '8px', color: currentTheme.warning }}>
                 🚀 Keep going! You're making great progress:
               </div>
-              <div style={{ color: 'rgba(255,255,255,0.7)' }}>
+              <div style={{ color: currentTheme.textMuted }}>
                 <div style={{ marginBottom: '8px' }}>
                   📈 <strong>Current Progress:</strong> {Object.values(userData?.learningProgress?.modules || {}).filter(m => m.completed).length} of {userData?.learningProgress?.total || 0} modules completed
                 </div>
                 <div style={{ marginBottom: '8px' }}>
                   🎯 <strong>Next Steps:</strong> Continue with your learning roadmap to reach 80% completion
                 </div>
-                <div style={{ marginTop: '12px', padding: '12px', background: 'rgba(243,156,18,0.1)', borderRadius: '8px' }}>
+                <div style={{ marginTop: '12px', padding: '12px', background: currentTheme.warning + '1A', borderRadius: '8px' }}>
                   💡 <strong>Tip:</strong> Focus on completing modules marked as "Learning" (orange nodes) in your Skill DNA map
                 </div>
               </div>
@@ -423,17 +438,17 @@ export default function SkillMap({ userData, onBack, onNext }) {
 
           {readiness.status === 'ready' && (
             <div style={{ fontSize: '14px', lineHeight: '1.6' }}>
-              <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#2ECC71' }}>
+              <div style={{ fontWeight: 'bold', marginBottom: '8px', color: currentTheme.success }}>
                 🎉 Excellent! You're ready for job opportunities:
               </div>
-              <div style={{ color: 'rgba(255,255,255,0.7)' }}>
+              <div style={{ color: currentTheme.textMuted }}>
                 <div style={{ marginBottom: '8px' }}>
                   ✅ <strong>Profile Complete:</strong> Your skill assessment and learning journey are done
                 </div>
                 <div style={{ marginBottom: '8px' }}>
                   💼 <strong>Next Steps:</strong> Explore company finder and apply for jobs that match your skills
                 </div>
-                <div style={{ marginTop: '12px', padding: '12px', background: 'rgba(46,204,113,0.1)', borderRadius: '8px' }}>
+                <div style={{ marginTop: '12px', padding: '12px', background: currentTheme.success + '1A', borderRadius: '8px' }}>
                   🚀 <strong>Pro Tip:</strong> Visit the Company Search page to find opportunities matching your {skillName} skills
                 </div>
               </div>
@@ -444,22 +459,22 @@ export default function SkillMap({ userData, onBack, onNext }) {
         {/* Legend */}
         <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', marginBottom: '20px', flexWrap: 'wrap' }}>
           {[
-            { color: '#2ECC71', label: '✅ Known' },
-            { color: '#F39C12', label: '📚 Learning' },
-            { color: '#E74C3C', label: '❌ Skill Gap' },
-            { color: '#FF6B35', label: '⚡ You' },
+            { color: currentTheme.success, label: '✅ Known' },
+            { color: currentTheme.warning, label: '📚 Learning' },
+            { color: currentTheme.error, label: '❌ Skill Gap' },
+            { color: currentTheme.accent, label: '⚡ You' },
           ].map((l, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: l.color }} />
-              <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.7)' }}>{l.label}</span>
+              <span style={{ fontSize: '13px', color: currentTheme.textMuted }}>{l.label}</span>
             </div>
           ))}
         </div>
 
         {/* D3 Graph */}
         <div style={{
-          background: 'rgba(255,255,255,0.04)',
-          border: '1px solid rgba(255,255,255,0.1)',
+          background: currentTheme.cardBg,
+          border: `1px solid ${currentTheme.border}`,
           borderRadius: '20px', padding: '10px', marginBottom: '24px',
         }}>
           <svg ref={svgRef} style={{ width: '100%', height: '420px' }} />
@@ -468,18 +483,18 @@ export default function SkillMap({ userData, onBack, onNext }) {
         {/* Stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '16px', marginBottom: '24px' }}>
           {[
-            { label: 'Skills Known',        value: known,    color: '#2ECC71', emoji: '✅' },
-            { label: 'Currently Learning',  value: learning, color: '#F39C12', emoji: '📚' },
-            { label: 'Skill Gaps',          value: gap,      color: '#E74C3C', emoji: '❌' },
+            { label: 'Skills Known',        value: known,    color: currentTheme.success, emoji: '✅' },
+            { label: 'Currently Learning',  value: learning, color: currentTheme.warning, emoji: '📚' },
+            { label: 'Skill Gaps',          value: gap,      color: currentTheme.error, emoji: '❌' },
           ].map((s, i) => (
             <div key={i} style={{
-              background: 'rgba(255,255,255,0.05)',
+              background: currentTheme.cardBg,
               border: `1px solid ${s.color}44`,
               borderRadius: '14px', padding: '20px', textAlign: 'center',
             }}>
               <div style={{ fontSize: '32px', marginBottom: '6px' }}>{s.emoji}</div>
               <div style={{ fontSize: '28px', fontWeight: 'bold', color: s.color }}>{s.value}</div>
-              <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', marginTop: '4px' }}>{s.label}</div>
+              <div style={{ fontSize: '13px', color: currentTheme.textMuted, marginTop: '4px' }}>{s.label}</div>
             </div>
           ))}
         </div>
@@ -487,16 +502,16 @@ export default function SkillMap({ userData, onBack, onNext }) {
         {/* Gap alert */}
         {gap > 0 && (
           <div style={{
-            background: 'rgba(231,76,60,0.1)',
-            border: '1px solid rgba(231,76,60,0.3)',
+            background: currentTheme.error + '1A',
+            border: `1px solid ${currentTheme.error}4D`,
             borderRadius: '14px', padding: '18px 24px', marginBottom: '24px',
           }}>
-            <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#E74C3C' }}>
+            <div style={{ fontWeight: 'bold', marginBottom: '8px', color: currentTheme.error }}>
               🚨 You have {gap} skill gap{gap > 1 ? 's' : ''} — here's what to learn:
             </div>
-            <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', lineHeight: '1.8' }}>
+            <div style={{ color: currentTheme.textMuted, fontSize: '14px', lineHeight: '1.8' }}>
               {processedNodes.filter(n => n.status === 'gap').map(n => (
-                <div key={n.id}>→ Learn <strong style={{ color: 'white' }}>{n.label}</strong> to unlock more opportunities</div>
+                <div key={n.id}>→ Learn <strong style={{ color: currentTheme.textPrimary }}>{n.label}</strong> to unlock more opportunities</div>
               ))}
             </div>
           </div>
@@ -505,16 +520,16 @@ export default function SkillMap({ userData, onBack, onNext }) {
         {/* Beginner encouragement */}
         {expId === 'beginner' && (
           <div style={{
-            background: 'rgba(255,107,53,0.1)',
-            border: '1px solid rgba(255,107,53,0.3)',
+            background: currentTheme.accent + '1A',
+            border: `1px solid ${currentTheme.accent}4D`,
             borderRadius: '14px', padding: '18px 24px', marginBottom: '24px',
             textAlign: 'center',
           }}>
             <div style={{ fontSize: '24px', marginBottom: '8px' }}>🌱</div>
-            <div style={{ fontWeight: 'bold', color: '#FF6B35', marginBottom: '6px' }}>
+            <div style={{ fontWeight: 'bold', color: currentTheme.accent, marginBottom: '6px' }}>
               Everyone starts from zero — and that's perfectly fine!
             </div>
-            <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px' }}>
+            <div style={{ color: currentTheme.textMuted, fontSize: '14px' }}>
               Your roadmap is ready. Start with the first skill and build from there.
             </div>
           </div>
@@ -522,7 +537,7 @@ export default function SkillMap({ userData, onBack, onNext }) {
 
         <div style={{ textAlign: 'center' }}>
           <button onClick={onNext} style={{
-            background: '#FF6B35', color: 'white', border: 'none',
+            background: currentTheme.accent, color: currentTheme.textPrimary, border: 'none',
             padding: '16px 48px', borderRadius: '30px',
             fontSize: '17px', fontWeight: 'bold', cursor: 'pointer',
           }}>

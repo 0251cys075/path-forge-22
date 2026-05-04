@@ -5,7 +5,9 @@ import BeginnerFlow from './BeginnerFlow';
 import ExperiencedFlow from './ExperiencedFlow';
 import ResultScreen from './ResultScreen';
 
-export default function OnboardingQuiz({ onComplete, onBack }) {
+const defaultTheme = { pageBg:'#1D2226', cardBg:'#1B1F23', inputBg:'#283039', border:'#38434F', textPrimary:'#E7E9EA', textMuted:'#B0B7BF', accent:'#0A66C2', accentHover:'#004182', accentLight:'#70B5F9', success:'#057642', warning:'#F5C518', error:'#CC1016' };
+
+export default function OnboardingQuiz({ onComplete, onBack, theme = defaultTheme }) {
   const [currentStep, setCurrentStep] = useState('choose-path');
   const [experienceLevel, setExperienceLevel] = useState(null);
   const [trackId, setTrackId] = useState(null);
@@ -82,6 +84,7 @@ export default function OnboardingQuiz({ onComplete, onBack }) {
           <ChooseYourPath
             onNext={handleChoosePath}
             onBack={onBack}
+            theme={theme}
           />
         );
       
@@ -91,6 +94,7 @@ export default function OnboardingQuiz({ onComplete, onBack }) {
             onNext={handleTrackSelection}
             onBack={handleBack}
             experienceLevel={experienceLevel}
+            theme={theme}
           />
         );
       
@@ -100,6 +104,7 @@ export default function OnboardingQuiz({ onComplete, onBack }) {
             onNext={handleBeginnerComplete}
             onBack={handleBack}
             trackId={trackId}
+            theme={theme}
           />
         );
       
@@ -109,6 +114,7 @@ export default function OnboardingQuiz({ onComplete, onBack }) {
             onNext={handleExperiencedComplete}
             onBack={handleBack}
             trackId={trackId}
+            theme={theme}
           />
         );
       
@@ -119,6 +125,7 @@ export default function OnboardingQuiz({ onComplete, onBack }) {
             onBack={handleBack}
             onTryDifferentTrack={handleTryDifferentTrack}
             result={quizData}
+            theme={theme}
           />
         );
       

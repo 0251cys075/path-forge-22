@@ -94,7 +94,22 @@ function getTaskResources(step) {
   }));
 }
 
-export default function AILearningPath({ userData, onBack, onNext, onProgressUpdate }) {
+export default function AILearningPath({ userData, onBack, onNext, onProgressUpdate, theme }) {
+  const defaultTheme = {
+    pageBg: '#1D2226',
+    cardBg: '#1B1F23',
+    inputBg: '#283039',
+    border: '#38434F',
+    textPrimary: '#E7E9EA',
+    textMuted: '#B0B7BF',
+    accent: '#0A66C2',
+    accentHover: '#004182',
+    accentLight: '#70B5F9',
+    success: '#057642',
+    warning: '#F5C518',
+    error: '#CC1016',
+  };
+  const currentTheme = theme || defaultTheme;
   const skillName = userData?.skill?.title || 'Frontend Development';
   const name = userData?.name || 'Student';
   const skillIcon = userData?.skill?.icon || '💻';
@@ -323,32 +338,32 @@ export default function AILearningPath({ userData, onBack, onNext, onProgressUpd
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)', color: 'white', padding: '30px 20px' }}>
+    <div style={{ minHeight: '100vh', background: currentTheme.pageBg, color: currentTheme.textPrimary, padding: '30px 20px' }}>
       <div style={{ maxWidth: '900px', margin: '0 auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '30px' }}>
-          <button type="button" onClick={onBack} style={{ background: 'transparent', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.2)', padding: '8px 18px', borderRadius: '20px', cursor: 'pointer' }}>← Back</button>
-          <h1 style={{ color: '#FF6B35', fontSize: '22px', fontWeight: 'bold' }}>⚡ PathForge</h1>
+          <button type="button" onClick={onBack} style={{ background: 'transparent', color: currentTheme.textMuted, border: `1px solid ${currentTheme.border}`, padding: '8px 18px', borderRadius: '20px', cursor: 'pointer' }}>← Back</button>
+          <h1 style={{ color: currentTheme.accent, fontSize: '22px', fontWeight: 'bold' }}>⚡ PathForge</h1>
         </div>
 
         <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-          <div style={{ display: 'inline-block', background: 'rgba(255,107,53,0.15)', border: '1px solid rgba(255,107,53,0.4)', borderRadius: '20px', padding: '6px 18px', marginBottom: '16px', fontSize: '13px', color: '#FF6B35' }}>
+          <div style={{ display: 'inline-block', background: currentTheme.accent + '26', border: '1px solid ' + currentTheme.accent + '66', borderRadius: '20px', padding: '6px 18px', marginBottom: '16px', fontSize: '13px', color: currentTheme.accent }}>
             🤖 AI-Driven Adaptive Roadmap · Time-verified study
           </div>
           <h2 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '8px' }}>{name}&apos;s Learning Journey</h2>
-          <p style={{ color: 'rgba(255,255,255,0.5)' }}>{skillIcon} {skillName} · 🎯 {goal.split(' ').slice(1).join(' ')}</p>
+          <p style={{ color: currentTheme.textMuted }}>{skillIcon} {skillName} · 🎯 {goal.split(' ').slice(1).join(' ')}</p>
         </div>
 
-        <div style={{ background: 'rgba(52,152,219,0.1)', border: '1px solid rgba(52,152,219,0.25)', borderRadius: '14px', padding: '14px 18px', marginBottom: '20px', fontSize: '13px', color: 'rgba(255,255,255,0.75)', lineHeight: 1.5 }}>
-          <strong style={{ color: '#3498DB' }}>How completion works:</strong> for each task, click <strong>Open resource</strong> to visit its own link (3 tasks → 3 links). The timer for that task starts only after its link was opened; time accrues when you are back on <strong>this PathForge tab</strong> with the module expanded (other tabs pause the timer). Need <strong>{MIN_MS_PER_TASK / 60000} minutes</strong> per task, then quiz, AI viva, and <strong>Finalize module</strong>.
+        <div style={{ background: currentTheme.accent + '1A', border: '1px solid ' + currentTheme.accent + '40', borderRadius: '14px', padding: '14px 18px', marginBottom: '20px', fontSize: '13px', color: currentTheme.textMuted, lineHeight: 1.5 }}>
+          <strong style={{ color: currentTheme.accent }}>How completion works:</strong> for each task, click <strong>Open resource</strong> to visit its own link (3 tasks → 3 links). The timer for that task starts only after its link was opened; time accrues when you are back on <strong>this PathForge tab</strong> with the module expanded (other tabs pause the timer). Need <strong>{MIN_MS_PER_TASK / 60000} minutes</strong> per task, then quiz, AI viva, and <strong>Finalize module</strong>.
         </div>
 
-        <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '20px 24px', marginBottom: '24px' }}>
+        <div style={{ background: currentTheme.cardBg, border: '1px solid ' + currentTheme.border, borderRadius: '16px', padding: '20px 24px', marginBottom: '24px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-            <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.7)' }}>{doneCount} of {steps.length} modules mastered</span>
-            <span style={{ color: '#FF6B35', fontWeight: 'bold' }}>{progress}%</span>
+            <span style={{ fontSize: '14px', color: currentTheme.textMuted }}>{doneCount} of {steps.length} modules mastered</span>
+            <span style={{ color: currentTheme.accent, fontWeight: 'bold' }}>{progress}%</span>
           </div>
-          <div style={{ height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px' }}>
-            <div style={{ height: '100%', width: `${progress}%`, background: 'linear-gradient(90deg, #FF6B35, #FF9A6C)', borderRadius: '4px', transition: 'width 0.4s ease' }} />
+          <div style={{ height: '8px', background: currentTheme.inputBg, borderRadius: '4px' }}>
+            <div style={{ height: '100%', width: `${progress}%`, background: 'linear-gradient(90deg, ' + currentTheme.accent + ', ' + currentTheme.accentLight + ')', borderRadius: '4px', transition: 'width 0.4s ease' }} />
           </div>
         </div>
 
@@ -361,25 +376,25 @@ export default function AILearningPath({ userData, onBack, onNext, onProgressUpd
             const studyDone = studyRequirementsMet(item, step);
 
             return (
-              <div key={i} style={{ background: isDone ? 'rgba(46,204,113,0.05)' : 'rgba(255,255,255,0.03)', border: `1px solid ${isDone ? 'rgba(46,204,113,0.2)' : 'rgba(255,255,255,0.1)'}`, borderRadius: '20px', overflow: 'hidden' }}>
+              <div key={i} style={{ background: isDone ? currentTheme.success + '1A' : currentTheme.cardBg, border: `1px solid ${isDone ? currentTheme.success : currentTheme.border}`, borderRadius: '20px', overflow: 'hidden' }}>
                 <button type="button" onClick={() => setActiveStep(isOpen ? null : i)} style={{ width: '100%', padding: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'transparent', border: 'none', color: 'inherit', textAlign: 'left' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: isDone ? '#2ECC71' : 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: isDone ? 'white' : 'rgba(255,255,255,0.4)', fontWeight: 'bold', fontSize: '14px' }}>{isDone ? '✓' : i + 1}</div>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: isDone ? currentTheme.success : currentTheme.inputBg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: isDone ? '#FFFFFF' : currentTheme.textMuted, fontWeight: 'bold', fontSize: '14px' }}>{isDone ? '✓' : i + 1}</div>
                     <div>
-                      <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: isDone ? '#2ECC71' : 'white', margin: 0 }}>{step.title}</h3>
-                      <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', margin: '4px 0 0' }}>{step.week} · {step.duration} · Study {Math.round(frac * 100)}%</p>
+                      <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: isDone ? currentTheme.success : currentTheme.textPrimary, margin: 0 }}>{step.title}</h3>
+                      <p style={{ fontSize: '12px', color: currentTheme.textMuted, margin: '4px 0 0' }}>{step.week} · {step.duration} · Study {Math.round(frac * 100)}%</p>
                     </div>
                   </div>
-                  <div style={{ transform: isOpen ? 'rotate(180deg)' : 'none', transition: '0.3s', color: 'rgba(255,255,255,0.3)' }}>▼</div>
+                  <div style={{ transform: isOpen ? 'rotate(180deg)' : 'none', transition: '0.3s', color: currentTheme.textMuted }}>▼</div>
                 </button>
 
                 {isOpen && (
-                  <div style={{ padding: '0 20px 20px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                    <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.7)', margin: '20px 0', lineHeight: '1.6' }}>{step.description}</p>
+                  <div style={{ padding: '0 20px 20px', borderTop: `1px solid ${currentTheme.border}` }}>
+                    <p style={{ fontSize: '14px', color: currentTheme.textMuted, margin: '20px 0', lineHeight: '1.6' }}>{step.description}</p>
 
-                    <div style={{ background: 'rgba(255,107,53,0.08)', border: '1px solid rgba(255,107,53,0.25)', borderRadius: '14px', padding: '16px', marginBottom: '20px' }}>
-                      <h4 style={{ fontSize: '14px', fontWeight: 'bold', color: '#FF6B35', margin: '0 0 12px' }}>⏱ Tasks &amp; resources (timer starts after each link)</h4>
-                      <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.55)', marginBottom: '12px' }}>
+                    <div style={{ background: currentTheme.inputBg, border: `1px solid ${currentTheme.accent}`, borderRadius: '14px', padding: '16px', marginBottom: '20px' }}>
+                      <h4 style={{ fontSize: '14px', fontWeight: 'bold', color: currentTheme.accent, margin: '0 0 12px' }}>⏱ Tasks &amp; resources (timer starts after each link)</h4>
+                      <p style={{ fontSize: '12px', color: currentTheme.textMuted, marginBottom: '12px' }}>
                         Use <strong>Open resource</strong> to open the official reading for that task. The timer for that line unlocks only after you open its link. Come back to this tab and choose <strong>Use timer for this task</strong> so time counts while PathForge stays visible ({formatClock(MIN_MS_PER_TASK)} per task).
                       </p>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -391,24 +406,24 @@ export default function AILearningPath({ userData, onBack, onNext, onProgressUpd
                           const pct = Math.min(100, (ms / MIN_MS_PER_TASK) * 100);
                           const isActive = (studyTaskIdx[i] ?? 0) === ti;
                           return (
-                            <div key={ti} style={{ padding: '12px', borderRadius: '12px', border: `1px solid ${isActive ? 'rgba(255,107,53,0.55)' : 'rgba(255,255,255,0.12)'}`, background: 'rgba(0,0,0,0.18)' }}>
+                            <div key={ti} style={{ padding: '12px', borderRadius: '12px', border: `1px solid ${isActive ? currentTheme.accent : currentTheme.border}`, background: currentTheme.cardBg }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', alignItems: 'flex-start' }}>
                                 <div style={{ flex: '1 1 200px' }}>
                                   <div style={{ fontWeight: 'bold', fontSize: '13px', marginBottom: 6 }}>Task {ti + 1}</div>
-                                  <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.65)', lineHeight: 1.45 }}>{t}</div>
-                                  <div style={{ marginTop: '8px', fontSize: '11px', color: '#3498DB' }}>📎 {tr.name} · {tr.type}</div>
+                                  <div style={{ fontSize: '13px', color: currentTheme.textMuted, lineHeight: 1.45 }}>{t}</div>
+                                  <div style={{ marginTop: '8px', fontSize: '11px', color: currentTheme.accentLight }}>📎 {tr.name} · {tr.type}</div>
                                 </div>
-                                <button type="button" onClick={() => openTaskResource(i, ti)} style={{ padding: '8px 14px', borderRadius: '10px', border: 'none', background: opened[ti] ? 'rgba(46,204,113,0.2)' : '#3498DB', color: opened[ti] ? '#2ECC71' : 'white', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer', whiteSpace: 'nowrap' }}>{opened[ti] ? '✓ Opened' : '🔗 Open resource'}</button>
+                                <button type="button" onClick={() => openTaskResource(i, ti)} style={{ padding: '8px 14px', borderRadius: '10px', border: 'none', background: opened[ti] ? currentTheme.success + '33' : currentTheme.accent, color: opened[ti] ? currentTheme.success : '#FFFFFF', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer', whiteSpace: 'nowrap' }}>{opened[ti] ? '✓ Opened' : '🔗 Open resource'}</button>
                               </div>
-                              <div style={{ height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px', marginTop: '10px' }}>
-                                <div style={{ width: `${pct}%`, height: '100%', background: pct >= 99.5 ? '#2ECC71' : '#FF6B35', borderRadius: '2px' }} />
+                              <div style={{ height: '4px', background: currentTheme.pageBg, borderRadius: '2px', marginTop: '10px' }}>
+                                <div style={{ width: `${pct}%`, height: '100%', background: pct >= 99.5 ? currentTheme.success : currentTheme.accent, borderRadius: '2px' }} />
                               </div>
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px', flexWrap: 'wrap', gap: 8 }}>
-                                <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)' }}>{formatClock(ms)} / {formatClock(MIN_MS_PER_TASK)}</span>
+                                <span style={{ fontSize: '11px', color: currentTheme.textMuted }}>{formatClock(ms)} / {formatClock(MIN_MS_PER_TASK)}</span>
                                 {opened[ti] ? (
-                                  <button type="button" onClick={() => setStudyTaskIdx((s) => ({ ...s, [i]: ti }))} style={{ padding: '4px 10px', borderRadius: '8px', fontSize: '11px', border: isActive ? '2px solid #FF6B35' : '1px solid rgba(255,255,255,0.2)', background: isActive ? 'rgba(255,107,53,0.15)' : 'transparent', color: 'white', cursor: 'pointer' }}>{isActive ? '● Timer on this task' : 'Use timer for this task'}</button>
+                                  <button type="button" onClick={() => setStudyTaskIdx((s) => ({ ...s, [i]: ti }))} style={{ padding: '4px 10px', borderRadius: '8px', fontSize: '11px', border: isActive ? '2px solid ' + currentTheme.accent : '1px solid ' + currentTheme.border, background: isActive ? currentTheme.accent + '26' : 'transparent', color: currentTheme.textPrimary, cursor: 'pointer' }}>{isActive ? '● Timer on this task' : 'Use timer for this task'}</button>
                                 ) : (
-                                  <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)' }}>Open resource to unlock timer</span>
+                                  <span style={{ fontSize: '11px', color: currentTheme.textMuted }}>Open resource to unlock timer</span>
                                 )}
                               </div>
                             </div>
@@ -416,11 +431,11 @@ export default function AILearningPath({ userData, onBack, onNext, onProgressUpd
                         })}
                       </div>
                       {document.visibilityState !== 'visible' && isOpen && (
-                        <p style={{ fontSize: '12px', color: '#F39C12', marginTop: '12px', marginBottom: 0 }}>⏸ Timer paused — return to this PathForge tab for study time to count.</p>
+                        <p style={{ fontSize: '12px', color: currentTheme.warning, marginTop: '12px', marginBottom: 0 }}>⏸ Timer paused — return to this PathForge tab for study time to count.</p>
                       )}
                     </div>
 
-                    <div style={{ background: 'rgba(255,255,255,0.02)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '16px' }}>
+                    <div style={{ background: currentTheme.inputBg, padding: '20px', borderRadius: '16px', border: `1px solid ${currentTheme.border}`, marginBottom: '16px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', marginBottom: '12px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                           <span style={{ fontSize: '18px' }}>📝</span>
@@ -437,34 +452,34 @@ export default function AILearningPath({ userData, onBack, onNext, onProgressUpd
                               border: 'none',
                               fontWeight: 'bold',
                               cursor: studyDone ? 'pointer' : 'not-allowed',
-                              background: studyDone ? '#9B59B6' : 'rgba(255,255,255,0.08)',
-                              color: studyDone ? 'white' : 'rgba(255,255,255,0.35)',
+                              background: studyDone ? currentTheme.accent : currentTheme.pageBg,
+                              color: studyDone ? '#FFFFFF' : currentTheme.textMuted,
                             }}
                           >
                             {studyDone ? 'Open verification quiz' : '🔒 Finish study time first'}
                           </button>
                         )}
                         {item.moduleQuizPassed && (
-                          <span style={{ color: '#2ECC71', fontWeight: 'bold', fontSize: '13px' }}>✅ Quiz passed ({item.moduleQuizScore ?? 0}%)</span>
+                          <span style={{ color: currentTheme.success, fontWeight: 'bold', fontSize: '13px' }}>✅ Quiz passed ({item.moduleQuizScore ?? 0}%)</span>
                         )}
                       </div>
                       {!item.moduleQuizPassed && !studyDone && (
-                        <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', margin: 0 }}>Quiz unlocks when every task line reaches 100% focused time.</p>
+                        <p style={{ fontSize: '12px', color: currentTheme.textMuted, margin: 0 }}>Quiz unlocks when every task line reaches 100% focused time.</p>
                       )}
                     </div>
 
-                    <div style={{ background: 'rgba(255,255,255,0.02)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <div style={{ background: currentTheme.inputBg, padding: '24px', borderRadius: '16px', border: `1px solid ${currentTheme.border}` }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
                         <span style={{ fontSize: '18px' }}>🧠</span>
                         <h4 style={{ fontSize: '15px', fontWeight: 'bold', margin: 0 }}>AI Interactive Viva</h4>
                       </div>
                       {!item.moduleQuizPassed ? (
-                        <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.45)', margin: 0 }}>Pass the quiz above to unlock the viva.</p>
+                        <p style={{ fontSize: '13px', color: currentTheme.textMuted, margin: 0 }}>Pass the quiz above to unlock the viva.</p>
                       ) : item.testPassed ? (
-                        <div style={{ color: '#2ECC71', fontWeight: 'bold', fontSize: '14px' }}>✅ Viva cleared: {item.testScore}% technical depth</div>
+                        <div style={{ color: currentTheme.success, fontWeight: 'bold', fontSize: '14px' }}>✅ Viva cleared: {item.testScore}% technical depth</div>
                       ) : (
                         <div>
-                          <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', marginBottom: '16px' }}>
+                          <p style={{ fontSize: '13px', color: currentTheme.textMuted, marginBottom: '16px' }}>
                             Challenge: <strong>Explain how you would apply {step.title} in a real project (architecture, tradeoffs, pitfalls).</strong>
                           </p>
                           <textarea
@@ -477,11 +492,11 @@ export default function AILearningPath({ userData, onBack, onNext, onProgressUpd
                             onCopy={(e) => e.preventDefault()}
                             onCut={(e) => e.preventDefault()}
                             onContextMenu={(e) => e.preventDefault()}
-                            style={{ width: '100%', minHeight: '120px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '14px', marginBottom: '12px', resize: 'vertical' }}
+                            style={{ width: '100%', minHeight: '120px', background: currentTheme.pageBg, border: `1px solid ${currentTheme.border}`, borderRadius: '12px', padding: '12px', color: currentTheme.textPrimary, fontSize: '14px', marginBottom: '12px', resize: 'vertical' }}
                           />
-                          <button type="button" onClick={() => submitAIViva(i, document.getElementById(`viva-${i}`)?.value || '')} style={{ background: '#FF6B35', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer' }}>Submit for AI audit</button>
+                          <button type="button" onClick={() => submitAIViva(i, document.getElementById(`viva-${i}`)?.value || '')} style={{ background: currentTheme.accent, color: '#FFFFFF', border: 'none', padding: '10px 20px', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer' }}>Submit for AI audit</button>
                           {testResult && activeStep === i && (
-                            <p style={{ marginTop: '12px', fontSize: '13px', color: testResult.includes('✅') ? '#2ECC71' : '#E74C3C' }}>{testResult}</p>
+                            <p style={{ marginTop: '12px', fontSize: '13px', color: testResult.includes('✅') ? currentTheme.success : currentTheme.error }}>{testResult}</p>
                           )}
                         </div>
                       )}
@@ -495,9 +510,9 @@ export default function AILearningPath({ userData, onBack, onNext, onProgressUpd
                         marginTop: '16px',
                         width: '100%',
                         padding: '14px',
-                        background: isDone ? 'rgba(46,204,113,0.12)' : item.testPassed && item.moduleQuizPassed && studyDone ? '#2ECC71' : 'rgba(255,255,255,0.06)',
-                        color: isDone ? '#2ECC71' : item.testPassed && item.moduleQuizPassed && studyDone ? 'white' : 'rgba(255,255,255,0.35)',
-                        border: isDone ? '1px solid #2ECC71' : 'none',
+                        background: isDone ? 'rgba(46,204,113,0.12)' : item.testPassed && item.moduleQuizPassed && studyDone ? currentTheme.success : currentTheme.inputBg,
+                        color: isDone ? currentTheme.success : item.testPassed && item.moduleQuizPassed && studyDone ? '#FFFFFF' : currentTheme.textMuted,
+                        border: isDone ? `1px solid ${currentTheme.success}` : 'none',
                         borderRadius: '12px',
                         fontWeight: 'bold',
                         cursor: isDone || (item.testPassed && item.moduleQuizPassed && studyDone) ? 'pointer' : 'not-allowed',
@@ -517,11 +532,11 @@ export default function AILearningPath({ userData, onBack, onNext, onProgressUpd
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
           <div
             role="dialog"
-            style={{ background: '#1a1a2e', border: '1px solid rgba(155,89,182,0.5)', borderRadius: 20, padding: 28, maxWidth: 520, width: '100%', maxHeight: '90vh', overflowY: 'auto' }}
+            style={{ background: currentTheme.cardBg, border: `1px solid ${currentTheme.border}`, borderRadius: 20, padding: 28, maxWidth: 520, width: '100%', maxHeight: '90vh', overflowY: 'auto' }}
             onPaste={(e) => e.preventDefault()}
           >
-            <h3 style={{ marginTop: 0, color: '#FF6B35' }}>{pickQuizQuestions(quizOpen).label}</h3>
-            <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>Answer all. Submit is enabled after {QUIZ_MIN_READ_MS / 1000}s on this screen.</p>
+            <h3 style={{ marginTop: 0, color: currentTheme.accent }}>{pickQuizQuestions(quizOpen).label}</h3>
+            <p style={{ fontSize: '12px', color: currentTheme.textMuted }}>Answer all. Submit is enabled after {QUIZ_MIN_READ_MS / 1000}s on this screen.</p>
             {pickQuizQuestions(quizOpen).questions.map((q, qi) => (
               <div key={qi} style={{ marginBottom: 18 }}>
                 <div style={{ fontWeight: 'bold', marginBottom: 8, fontSize: 14 }}>{qi + 1}. {q.q}</div>
@@ -538,13 +553,13 @@ export default function AILearningPath({ userData, onBack, onNext, onProgressUpd
                 ))}
               </div>
             ))}
-            {quizMessage && <p style={{ color: '#E74C3C', fontSize: 13 }}>{quizMessage}</p>}
+            {quizMessage && <p style={{ color: currentTheme.error, fontSize: 13 }}>{quizMessage}</p>}
             <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
-              <button type="button" onClick={() => { setQuizOpen(null); setQuizMessage(''); }} style={{ padding: '12px 20px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.2)', background: 'transparent', color: 'white', cursor: 'pointer' }}>Cancel</button>
+              <button type="button" onClick={() => { setQuizOpen(null); setQuizMessage(''); }} style={{ padding: '12px 20px', borderRadius: 12, border: `1px solid ${currentTheme.border}`, background: 'transparent', color: currentTheme.textPrimary, cursor: 'pointer' }}>Cancel</button>
               <button
                 type="button"
                 onClick={() => submitModuleQuiz(quizOpen)}
-                style={{ padding: '12px 24px', borderRadius: 12, border: 'none', background: '#9B59B6', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}
+                style={{ padding: '12px 24px', borderRadius: 12, border: 'none', background: currentTheme.accent, color: '#FFFFFF', fontWeight: 'bold', cursor: 'pointer' }}
               >
                 Submit answers
               </button>
@@ -554,7 +569,7 @@ export default function AILearningPath({ userData, onBack, onNext, onProgressUpd
       )}
 
       <div style={{ textAlign: 'center', marginTop: '40px' }}>
-        <button type="button" onClick={onNext} style={{ background: '#FF6B35', color: 'white', border: 'none', padding: '16px 48px', borderRadius: '30px', fontSize: '17px', fontWeight: 'bold', cursor: 'pointer' }}>View Employability Score →</button>
+        <button type="button" onClick={onNext} style={{ background: currentTheme.accent, color: '#FFFFFF', border: 'none', padding: '16px 48px', borderRadius: '30px', fontSize: '17px', fontWeight: 'bold', cursor: 'pointer' }}>View Employability Score →</button>
       </div>
     </div>
   );

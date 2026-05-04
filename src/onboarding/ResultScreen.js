@@ -1,6 +1,8 @@
 import React from 'react';
 
-export default function ResultScreen({ onComplete, onBack, onTryDifferentTrack, result }) {
+const defaultTheme = { pageBg:'#1D2226', cardBg:'#1B1F23', inputBg:'#283039', border:'#38434F', textPrimary:'#E7E9EA', textMuted:'#B0B7BF', accent:'#0A66C2', accentHover:'#004182', accentLight:'#70B5F9', success:'#057642', warning:'#F5C518', error:'#CC1016' };
+
+export default function ResultScreen({ onComplete, onBack, onTryDifferentTrack, result, theme = defaultTheme }) {
   const {
     experienceLevel,
     trackId,
@@ -13,7 +15,7 @@ export default function ResultScreen({ onComplete, onBack, onTryDifferentTrack, 
     frontend: {
       title: 'Frontend Development',
       icon: '🎨',
-      color: '#FF6B35'
+      color: '#0A66C2'
     },
     backend: {
       title: 'Backend Development', 
@@ -28,7 +30,7 @@ export default function ResultScreen({ onComplete, onBack, onTryDifferentTrack, 
     mobile: {
       title: 'Mobile Development',
       icon: '📱',
-      color: '#2ECC71'
+      color: '#057642'
     },
     game: {
       title: 'Game Development',
@@ -38,7 +40,7 @@ export default function ResultScreen({ onComplete, onBack, onTryDifferentTrack, 
     cybersecurity: {
       title: 'Cybersecurity',
       icon: '🔐',
-      color: '#E74C3C'
+      color: '#CC1016'
     }
   };
 
@@ -75,8 +77,8 @@ export default function ResultScreen({ onComplete, onBack, onTryDifferentTrack, 
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)',
-      color: 'white',
+      background: theme.pageBg,
+      color: theme.textPrimary,
       fontFamily: 'var(--font-main)',
       display: 'flex',
       flexDirection: 'column',
@@ -88,9 +90,9 @@ export default function ResultScreen({ onComplete, onBack, onTryDifferentTrack, 
         <button 
           onClick={onBack}
           style={{
-            background: 'rgba(255,255,255,0.05)',
-            color: 'rgba(255,255,255,0.7)',
-            border: '1px solid rgba(255,255,255,0.1)',
+            background: theme.inputBg,
+            color: theme.textMuted,
+            border: `1px solid ${theme.border}`,
             padding: '10px 20px',
             borderRadius: '20px',
             cursor: 'pointer',
@@ -117,7 +119,7 @@ export default function ResultScreen({ onComplete, onBack, onTryDifferentTrack, 
         
         <p style={{
           fontSize: '20px',
-          color: 'rgba(255,255,255,0.8)',
+          color: theme.textMuted,
           maxWidth: '600px',
           margin: '0 auto 40px',
           lineHeight: '1.6'
@@ -145,8 +147,8 @@ export default function ResultScreen({ onComplete, onBack, onTryDifferentTrack, 
             
             {/* Level Card */}
             <div style={{
-              background: 'rgba(255,255,255,0.03)',
-              border: '1px solid rgba(255,255,255,0.08)',
+              background: theme.cardBg,
+              border: `1px solid ${theme.border}`,
               borderRadius: '24px',
               padding: '30px',
               backdropFilter: 'blur(10px)'
@@ -162,7 +164,7 @@ export default function ResultScreen({ onComplete, onBack, onTryDifferentTrack, 
               
               <p style={{
                 fontSize: '16px',
-                color: 'rgba(255,255,255,0.7)',
+                color: theme.textMuted,
                 lineHeight: '1.6',
                 marginBottom: '20px'
               }}>
@@ -170,16 +172,16 @@ export default function ResultScreen({ onComplete, onBack, onTryDifferentTrack, 
               </p>
               
               <div style={{
-                background: 'rgba(255,107,53,0.1)',
-                border: '1px solid rgba(255,107,53,0.3)',
+                background: theme.inputBg,
+                border: `1px solid ${theme.accent}`,
                 borderRadius: '16px',
                 padding: '20px',
                 textAlign: 'center'
               }}>
-                <div style={{ fontSize: '32px', fontWeight: '900', color: '#FF6B35' }}>
+                <div style={{ fontSize: '32px', fontWeight: '900', color: theme.accent }}>
                   {currentLevel?.duration}
                 </div>
-                <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)' }}>
+                <div style={{ fontSize: '14px', color: theme.textMuted }}>
                   Estimated duration
                 </div>
               </div>
@@ -188,8 +190,8 @@ export default function ResultScreen({ onComplete, onBack, onTryDifferentTrack, 
             {/* Skills Assessment (for experienced users) */}
             {experienceLevel === 'experienced' && (verifiedSkills.length > 0 || failedSkills.length > 0) && (
               <div style={{
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(255,255,255,0.08)',
+                background: theme.cardBg,
+                border: `1px solid ${theme.border}`,
                 borderRadius: '24px',
                 padding: '30px',
                 backdropFilter: 'blur(10px)'
@@ -207,7 +209,7 @@ export default function ResultScreen({ onComplete, onBack, onTryDifferentTrack, 
                     <h4 style={{
                       fontSize: '16px',
                       fontWeight: '700',
-                      color: '#2ECC71',
+                      color: theme.success,
                       marginBottom: '12px'
                     }}>
                       Verified Skills ✅
@@ -215,8 +217,8 @@ export default function ResultScreen({ onComplete, onBack, onTryDifferentTrack, 
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                       {verifiedSkills.map(skillId => (
                         <span key={skillId} style={{
-                          background: 'rgba(46,204,113,0.1)',
-                          color: '#2ECC71',
+                          background: theme.success + '1A',
+                          color: theme.success,
                           padding: '6px 12px',
                           borderRadius: '20px',
                           fontSize: '13px',
@@ -234,7 +236,7 @@ export default function ResultScreen({ onComplete, onBack, onTryDifferentTrack, 
                     <h4 style={{
                       fontSize: '16px',
                       fontWeight: '700',
-                      color: '#E74C3C',
+                      color: theme.error,
                       marginBottom: '12px'
                     }}>
                       Skills to Work On ❌
@@ -242,8 +244,8 @@ export default function ResultScreen({ onComplete, onBack, onTryDifferentTrack, 
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                       {failedSkills.map(skillId => (
                         <span key={skillId} style={{
-                          background: 'rgba(231,76,60,0.1)',
-                          color: '#E74C3C',
+                          background: theme.error + '1A',
+                          color: theme.error,
                           padding: '6px 12px',
                           borderRadius: '20px',
                           fontSize: '13px',
@@ -261,8 +263,8 @@ export default function ResultScreen({ onComplete, onBack, onTryDifferentTrack, 
 
           {/* Right Column - Roadmap Preview */}
           <div style={{
-            background: 'rgba(255,255,255,0.03)',
-            border: '1px solid rgba(255,255,255,0.08)',
+            background: theme.cardBg,
+            border: `1px solid ${theme.border}`,
             borderRadius: '24px',
             padding: '30px',
             backdropFilter: 'blur(10px)'
@@ -278,8 +280,8 @@ export default function ResultScreen({ onComplete, onBack, onTryDifferentTrack, 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {roadmapPreview.map((week, index) => (
                 <div key={index} style={{
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.08)',
+                  background: theme.inputBg,
+                  border: `1px solid ${theme.border}`,
                   borderRadius: '16px',
                   padding: '16px',
                   display: 'flex',
@@ -290,8 +292,8 @@ export default function ResultScreen({ onComplete, onBack, onTryDifferentTrack, 
                     width: '40px',
                     height: '40px',
                     borderRadius: '12px',
-                    background: 'rgba(255,107,53,0.1)',
-                    color: '#FF6B35',
+                    background: theme.accent + '1A',
+                    color: theme.accent,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -301,10 +303,10 @@ export default function ResultScreen({ onComplete, onBack, onTryDifferentTrack, 
                     {week.week}
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '15px', fontWeight: '600', color: 'white' }}>
+                    <div style={{ fontSize: '15px', fontWeight: '600', color: theme.textPrimary }}>
                       {week.title}
                     </div>
-                    <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>
+                    <div style={{ fontSize: '12px', color: theme.textMuted }}>
                       {week.status === 'upcoming' ? 'Coming up' : 'Completed'}
                     </div>
                   </div>
@@ -315,13 +317,13 @@ export default function ResultScreen({ onComplete, onBack, onTryDifferentTrack, 
             <div style={{
               marginTop: '24px',
               padding: '16px',
-              background: 'rgba(255,255,255,0.02)',
+              background: theme.inputBg,
               borderRadius: '12px',
-              border: '1px solid rgba(255,255,255,0.05)'
+              border: `1px solid ${theme.border}`
             }}>
               <p style={{
                 fontSize: '13px',
-                color: 'rgba(255,255,255,0.5)',
+                color: theme.textMuted,
                 margin: 0,
                 textAlign: 'center',
                 fontStyle: 'italic'
@@ -336,7 +338,7 @@ export default function ResultScreen({ onComplete, onBack, onTryDifferentTrack, 
       {/* Action Buttons */}
       <div style={{
         padding: '30px 20px',
-        background: 'rgba(0,0,0,0.2)',
+        background: theme.inputBg,
         backdropFilter: 'blur(10px)',
         display: 'flex',
         justifyContent: 'center',
@@ -346,15 +348,15 @@ export default function ResultScreen({ onComplete, onBack, onTryDifferentTrack, 
         <button
           onClick={() => onComplete(result)}
           style={{
-            background: '#FF6B35',
-            color: 'white',
+            background: theme.accent,
+            color: '#FFFFFF',
             border: 'none',
             padding: '16px 40px',
             borderRadius: '30px',
             fontSize: '16px',
             fontWeight: '800',
             cursor: 'pointer',
-            boxShadow: '0 8px 25px rgba(255,107,53,0.3)'
+            boxShadow: `0 8px 25px ${theme.accent}40`
           }}
         >
           Start Your Journey →
@@ -363,9 +365,9 @@ export default function ResultScreen({ onComplete, onBack, onTryDifferentTrack, 
         <button
           onClick={onTryDifferentTrack}
           style={{
-            background: 'rgba(255,255,255,0.1)',
-            color: 'white',
-            border: '1px solid rgba(255,255,255,0.2)',
+            background: theme.cardBg,
+            color: theme.textPrimary,
+            border: `1px solid ${theme.border}`,
             padding: '16px 32px',
             borderRadius: '30px',
             fontSize: '16px',

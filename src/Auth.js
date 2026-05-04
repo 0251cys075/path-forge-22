@@ -16,7 +16,9 @@ import { auth, db } from './firebase';
 const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
 
-export default function Auth({ onLogin, onBack }) {
+const defaultTheme = { pageBg:'#1D2226', cardBg:'#1B1F23', inputBg:'#283039', border:'#38434F', textPrimary:'#E7E9EA', textMuted:'#B0B7BF', accent:'#0A66C2', accentHover:'#004182', accentLight:'#70B5F9', success:'#057642', warning:'#F5C518', error:'#CC1016' };
+
+export default function Auth({ onLogin, onBack, theme = defaultTheme }) {
   const PHONE_OTP_ENABLED = false;
   const [mode, setMode] = useState('login'); // login | signup | phone
   const [name, setName] = useState('');
@@ -183,48 +185,48 @@ export default function Auth({ onLogin, onBack }) {
 
   const inputStyle = {
     width: '100%', padding: '14px 18px', borderRadius: '12px',
-    border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.08)',
-    color: 'white', fontSize: '15px', outline: 'none', boxSizing: 'border-box',
+    border: `1px solid ${theme.border}`, background: theme.inputBg,
+    color: theme.textPrimary, fontSize: '15px', outline: 'none', boxSizing: 'border-box',
     marginBottom: '14px'
   };
 
   const btnPrimary = {
-    width: '100%', background: '#FF6B35', color: 'white', border: 'none',
+    width: '100%', background: theme.accent, color: '#FFFFFF', border: 'none',
     padding: '14px', borderRadius: '30px', fontSize: '16px', fontWeight: 'bold',
     cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1,
     marginBottom: '12px'
   };
 
   const btnSecondary = {
-    width: '100%', background: 'rgba(255,255,255,0.08)', color: 'white',
-    border: '1px solid rgba(255,255,255,0.2)', padding: '14px', borderRadius: '30px',
+    width: '100%', background: theme.inputBg, color: theme.textPrimary,
+    border: `1px solid ${theme.border}`, padding: '14px', borderRadius: '30px',
     fontSize: '15px', cursor: 'pointer', marginBottom: '12px', display: 'flex',
     alignItems: 'center', justifyContent: 'center', gap: '10px'
   };
 
   return (
     <div style={{
-      minHeight: '100vh', background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)',
-      color: 'white', fontFamily: 'Arial, sans-serif',
+      minHeight: '100vh', background: theme.pageBg,
+      color: theme.textPrimary, fontFamily: 'Arial, sans-serif',
       display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
     }}>
       <div style={{ width: '100%', maxWidth: '420px' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           {onBack && (
-            <button onClick={onBack} style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.1)', padding: '6px 14px', borderRadius: '15px', cursor: 'pointer', fontSize: '12px', marginBottom: '16px', transition: 'all 0.2s' }}
-              onMouseEnter={e => { e.currentTarget.style.color='white'; e.currentTarget.style.background='rgba(255,255,255,0.1)'; }}
-              onMouseLeave={e => { e.currentTarget.style.color='rgba(255,255,255,0.5)'; e.currentTarget.style.background='rgba(255,255,255,0.05)'; }}>
+            <button onClick={onBack} style={{ background: theme.inputBg, color: theme.textMuted, border: `1px solid ${theme.border}`, padding: '6px 14px', borderRadius: '15px', cursor: 'pointer', fontSize: '12px', marginBottom: '16px', transition: 'all 0.2s' }}
+              onMouseEnter={e => { e.currentTarget.style.color=theme.textPrimary; e.currentTarget.style.background=theme.cardBg; }}
+              onMouseLeave={e => { e.currentTarget.style.color=theme.textMuted; e.currentTarget.style.background=theme.inputBg; }}>
               ← Back to Home
             </button>
           )}
-          <h1 style={{ color: '#FF6B35', fontSize: '32px', fontWeight: 'bold', marginBottom: '8px' }}>⚡ PathForge</h1>
-          <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '15px' }}>
+          <h1 style={{ color: theme.accent, fontSize: '32px', fontWeight: 'bold', marginBottom: '8px' }}>⚡ PathForge</h1>
+          <p style={{ color: theme.textMuted, fontSize: '15px' }}>
             {mode === 'login' ? 'Welcome back!' : mode === 'signup' ? 'Create your account' : 'Login with Phone'}
           </p>
         </div>
 
         <div style={{
-          background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+          background: theme.cardBg, border: `1px solid ${theme.border}`,
           borderRadius: '24px', padding: '32px'
         }}>
 
@@ -234,8 +236,8 @@ export default function Auth({ onLogin, onBack }) {
               {['login', 'signup'].map(m => (
                 <button key={m} onClick={() => { setMode(m); setError(''); }} style={{
                   flex: 1, padding: '10px', borderRadius: '20px', border: 'none',
-                  background: mode === m ? '#FF6B35' : 'rgba(255,255,255,0.08)',
-                  color: 'white', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer'
+                  background: mode === m ? theme.accent : theme.inputBg,
+                  color: theme.textPrimary, fontSize: '14px', fontWeight: 'bold', cursor: 'pointer'
                 }}>
                   {m === 'login' ? 'Login' : 'Sign Up'}
                 </button>
@@ -255,13 +257,13 @@ export default function Auth({ onLogin, onBack }) {
               <input style={inputStyle} type="password" placeholder="Password"
                 value={password} onChange={e => setPassword(e.target.value)} />
 
-              {error && <div style={{ color: '#FF6B6B', fontSize: '13px', marginBottom: '12px', textAlign: 'center' }}>{error}</div>}
+              {error && <div style={{ color: theme.error, fontSize: '13px', marginBottom: '12px', textAlign: 'center' }}>{error}</div>}
 
               <button style={btnPrimary} onClick={handleEmailAuth} disabled={loading}>
                 {loading ? '...' : mode === 'login' ? 'Login →' : 'Create Account →'}
               </button>
 
-              <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: '13px', marginBottom: '12px' }}>or</div>
+              <div style={{ textAlign: 'center', color: theme.textMuted, fontSize: '13px', marginBottom: '12px' }}>or</div>
 
               <button style={btnSecondary} onClick={handleGoogle} disabled={loading}>
                 <span style={{ fontSize: '18px' }}>G</span> Continue with Google
@@ -274,9 +276,9 @@ export default function Auth({ onLogin, onBack }) {
               ) : (
                 <div style={{
                   width: '100%',
-                  background: 'rgba(255,255,255,0.04)',
-                  color: 'rgba(255,255,255,0.55)',
-                  border: '1px dashed rgba(255,255,255,0.2)',
+                  background: theme.inputBg,
+                  color: theme.textMuted,
+                  border: `1px dashed ${theme.border}`,
                   padding: '14px',
                   borderRadius: '30px',
                   fontSize: '14px',
@@ -296,27 +298,27 @@ export default function Auth({ onLogin, onBack }) {
                 <>
                   <div style={{ marginBottom: '14px' }}>
                     <div style={{ display: 'flex', gap: '8px' }}>
-                      <div style={{ ...inputStyle, width: '70px', marginBottom: 0, textAlign: 'center', color: 'rgba(255,255,255,0.6)' }}>+91</div>
+                      <div style={{ ...inputStyle, width: '70px', marginBottom: 0, textAlign: 'center', color: theme.textMuted }}>+91</div>
                       <input style={{ ...inputStyle, flex: 1, marginBottom: 0 }} type="tel"
                         placeholder="10-digit phone number" value={phone}
                         onChange={e => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))} />
                     </div>
                   </div>
                   <div id="recaptcha-container" style={{ marginBottom: '12px' }} />
-                  {error && <div style={{ color: '#FF6B6B', fontSize: '13px', marginBottom: '12px', textAlign: 'center' }}>{error}</div>}
+                  {error && <div style={{ color: theme.error, fontSize: '13px', marginBottom: '12px', textAlign: 'center' }}>{error}</div>}
                   <button style={{ ...btnPrimary, marginTop: '8px' }} onClick={handleSendOTP} disabled={loading || phone.length !== 10}>
                     {loading ? 'Sending...' : 'Send OTP →'}
                   </button>
                 </>
               ) : (
                 <>
-                  <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', textAlign: 'center', marginBottom: '20px' }}>
+                  <p style={{ color: theme.textMuted, fontSize: '14px', textAlign: 'center', marginBottom: '20px' }}>
                     OTP sent to +91 {phone}
                   </p>
                   <input style={inputStyle} type="text" placeholder="Enter 6-digit OTP"
                     value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                     maxLength={6} />
-                  {error && <div style={{ color: '#FF6B6B', fontSize: '13px', marginBottom: '12px', textAlign: 'center' }}>{error}</div>}
+                  {error && <div style={{ color: theme.error, fontSize: '13px', marginBottom: '12px', textAlign: 'center' }}>{error}</div>}
                   <button style={btnPrimary} onClick={handleVerifyOTP} disabled={loading || otp.length !== 6}>
                     {loading ? 'Verifying...' : 'Verify OTP →'}
                   </button>
@@ -326,7 +328,7 @@ export default function Auth({ onLogin, onBack }) {
                 </>
               )}
               <button onClick={() => { setMode('login'); setError(''); setOtpSent(false); }} style={{
-                background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)',
+                background: 'none', border: 'none', color: theme.textMuted,
                 fontSize: '13px', cursor: 'pointer', width: '100%', marginTop: '8px'
               }}>← Back to Email Login</button>
             </>

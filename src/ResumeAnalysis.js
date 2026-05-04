@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { analyzeResumeWithGemini } from './gemini';
 
-export default function ResumeAnalysis({ onComplete, onBack }) {
+const defaultTheme = { pageBg:'#1D2226', cardBg:'#1B1F23', inputBg:'#283039', border:'#38434F', textPrimary:'#E7E9EA', textMuted:'#B0B7BF', accent:'#0A66C2', accentHover:'#004182', accentLight:'#70B5F9', success:'#057642', warning:'#F5C518', error:'#CC1016' };
+
+export default function ResumeAnalysis({ onComplete, onBack, theme = defaultTheme }) {
   const [mode, setMode] = useState(null); // 'skilled' or 'beginner'
   const [analyzing, setAnalyzing] = useState(false);
   const [beginnerScore, setBeginnerScore] = useState({});
@@ -210,9 +212,9 @@ export default function ResumeAnalysis({ onComplete, onBack }) {
   };
 
   const cardStyle = {
-    background: 'rgba(255, 255, 255, 0.05)',
+    background: theme.cardBg,
     backdropFilter: 'blur(10px)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
+    border: `1px solid ${theme.border}`,
     borderRadius: '24px',
     padding: '40px',
     textAlign: 'center',
@@ -235,15 +237,15 @@ export default function ResumeAnalysis({ onComplete, onBack }) {
 
   if (analyzing) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0f0c29', color: 'white' }}>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: theme.pageBg, color: theme.textPrimary }}>
         <div style={cardStyle}>
           <div className="loader" style={{ fontSize: '40px', marginBottom: '20px' }}>🧠</div>
           <h2 style={{ fontSize: '24px', marginBottom: '10px' }}>AI is Analyzing...</h2>
-          <p style={{ color: 'rgba(255,255,255,0.6)' }}>
+          <p style={{ color: theme.textMuted }}>
             {mode === 'skilled' ? 'Extracting skills from your resume...' : 'Mapping your Career DNA...'}
           </p>
-          <div style={{ width: '100%', height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px', marginTop: '20px', overflow: 'hidden' }}>
-            <div style={{ width: '60%', height: '100%', background: '#FF6B35', borderRadius: '2px' }} className="progress-bar-anim"></div>
+          <div style={{ width: '100%', height: '4px', background: theme.border, borderRadius: '2px', marginTop: '20px', overflow: 'hidden' }}>
+            <div style={{ width: '60%', height: '100%', background: theme.accent, borderRadius: '2px' }} className="progress-bar-anim"></div>
           </div>
         </div>
         <style>{`
@@ -255,78 +257,78 @@ export default function ResumeAnalysis({ onComplete, onBack }) {
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)', color: 'white', padding: '20px' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: theme.pageBg, color: theme.textPrimary, padding: '20px' }}>
 
       {!mode ? (
         <div style={cardStyle}>
-          <h1 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '10px', color: '#FF6B35' }}>Who are you?</h1>
-          <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '30px' }}>Select your path to start your personalized journey.</p>
+          <h1 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '10px', color: theme.accent }}>Who are you?</h1>
+          <p style={{ color: theme.textMuted, marginBottom: '30px' }}>Select your path to start your personalized journey.</p>
 
           <button
             onClick={() => setMode('skilled')}
-            style={{ ...buttonStyle, background: 'linear-gradient(90deg, #FF6B35, #FF9A6C)', color: 'white' }}
+            style={{ ...buttonStyle, background: theme.accent, color: '#FFFFFF' }}
           >
             📄 I have a Resume (Skilled)
           </button>
 
           <button
             onClick={() => setMode('beginner')}
-            style={{ ...buttonStyle, background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)' }}
+            style={{ ...buttonStyle, background: theme.inputBg, color: theme.textPrimary, border: `1px solid ${theme.border}` }}
           >
             🌱 I am a Beginner (No Exp)
           </button>
 
-          <button onClick={onBack} style={{ background: 'transparent', color: 'rgba(255,255,255,0.5)', border: 'none', cursor: 'pointer', marginTop: '10px' }}>← Go Back</button>
+          <button onClick={onBack} style={{ background: 'transparent', color: theme.textMuted, border: 'none', cursor: 'pointer', marginTop: '10px' }}>← Go Back</button>
         </div>
       ) : mode === 'skilled' ? (
         <div style={cardStyle}>
           <h2 style={{ fontSize: '24px', marginBottom: '10px' }}>Upload your Resume</h2>
-          <p style={{ color: 'rgba(255,255,255,0.6)', marginBottom: '20px' }}>Our AI will scan your file content and generate a verified skill report.</p>
+          <p style={{ color: theme.textMuted, marginBottom: '20px' }}>Our AI will scan your file content and generate a verified skill report.</p>
 
           {/* Fraud Alert Box */}
           {fraudAlert && (
-            <div style={{ background: 'rgba(231,76,60,0.15)', border: '1px solid rgba(231,76,60,0.5)', borderRadius: '12px', padding: '16px', marginBottom: '20px', textAlign: 'left' }}>
-              <p style={{ color: '#E74C3C', fontWeight: 'bold', marginBottom: '8px' }}>🚫 Upload Rejected</p>
-              <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '13px', lineHeight: '1.6' }}>{fraudAlert.message}</p>
+            <div style={{ background: 'rgba(231,76,60,0.15)', border: `1px solid ${theme.error}`, borderRadius: '12px', padding: '16px', marginBottom: '20px', textAlign: 'left' }}>
+              <p style={{ color: theme.error, fontWeight: 'bold', marginBottom: '8px' }}>🚫 Upload Rejected</p>
+              <p style={{ color: theme.textPrimary, fontSize: '13px', lineHeight: '1.6' }}>{fraudAlert.message}</p>
               {fraudAlert.found && fraudAlert.found.length > 0 && (
-                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px', marginTop: '8px' }}>Detected signals: {fraudAlert.found.join(', ')}</p>
+                <p style={{ color: theme.textMuted, fontSize: '12px', marginTop: '8px' }}>Detected signals: {fraudAlert.found.join(', ')}</p>
               )}
             </div>
           )}
 
           {/* Audit Report Card (shown after successful scan) */}
           {auditReport && (
-            <div style={{ background: 'rgba(46,204,113,0.08)', border: '1px solid rgba(46,204,113,0.3)', borderRadius: '12px', padding: '16px', marginBottom: '20px', textAlign: 'left' }}>
-              <p style={{ color: '#2ECC71', fontWeight: 'bold', marginBottom: '12px' }}>✅ Resume Verified — Generating Report...</p>
-              <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '12px', marginBottom: '8px' }}>🔍 Domain Detected: <strong style={{ color: 'white' }}>{auditReport.skillTitle}</strong></p>
-              <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '12px', marginBottom: '8px' }}>📊 Signals Found: <strong style={{ color: '#FF6B35' }}>{auditReport.keywordScore}</strong></p>
-              <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '12px', marginBottom: '8px' }}>🏷️ Status: <strong style={{ color: auditReport.readinessLevel === 'Industry Ready' ? '#2ECC71' : '#F39C12' }}>{auditReport.readinessLevel}</strong></p>
+            <div style={{ background: 'rgba(46,204,113,0.08)', border: `1px solid ${theme.success}`, borderRadius: '12px', padding: '16px', marginBottom: '20px', textAlign: 'left' }}>
+              <p style={{ color: theme.success, fontWeight: 'bold', marginBottom: '12px' }}>✅ Resume Verified — Generating Report...</p>
+              <p style={{ color: theme.textMuted, fontSize: '12px', marginBottom: '8px' }}>🔍 Domain Detected: <strong style={{ color: theme.textPrimary }}>{auditReport.skillTitle}</strong></p>
+              <p style={{ color: theme.textMuted, fontSize: '12px', marginBottom: '8px' }}>📊 Signals Found: <strong style={{ color: theme.accent }}>{auditReport.keywordScore}</strong></p>
+              <p style={{ color: theme.textMuted, fontSize: '12px', marginBottom: '8px' }}>🏷️ Status: <strong style={{ color: auditReport.readinessLevel === 'Industry Ready' ? theme.success : theme.warning }}>{auditReport.readinessLevel}</strong></p>
               <div style={{ marginTop: '12px', fontSize: '12px', lineHeight: '1.8' }}>
                 {auditReport.whyThisScore.map((line, i) => (
-                  <div key={i} style={{ color: 'rgba(255,255,255,0.75)' }}>{line}</div>
+                  <div key={i} style={{ color: theme.textPrimary }}>{line}</div>
                 ))}
               </div>
             </div>
           )}
 
           {!auditReport && (
-            <div style={{ border: '2px dashed rgba(255,107,53,0.3)', borderRadius: '16px', padding: '40px', marginBottom: '20px', cursor: 'pointer' }} onClick={() => document.getElementById('resume-up').click()}>
+            <div style={{ border: `2px dashed ${theme.border}`, borderRadius: '16px', padding: '40px', marginBottom: '20px', cursor: 'pointer' }} onClick={() => document.getElementById('resume-up').click()}>
               <span style={{ fontSize: '40px' }}>📥</span>
-              <p style={{ marginTop: '10px', fontSize: '14px' }}>Click to upload PDF or Docx</p>
-              <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', marginTop: '6px' }}>Our AI will verify the content — fake uploads will be rejected</p>
+              <p style={{ marginTop: '10px', fontSize: '14px', color: theme.textPrimary }}>Click to upload PDF or Docx</p>
+              <p style={{ fontSize: '11px', color: theme.textMuted, marginTop: '6px' }}>Our AI will verify the content — fake uploads will be rejected</p>
               <input id="resume-up" type="file" hidden onChange={handleFileUpload} accept=".pdf,.doc,.docx" />
             </div>
           )}
 
-          <button onClick={() => { setMode(null); setFraudAlert(null); setAuditReport(null); }} style={{ background: 'transparent', color: 'rgba(255,255,255,0.5)', border: 'none', cursor: 'pointer' }}>← Back</button>
+          <button onClick={() => { setMode(null); setFraudAlert(null); setAuditReport(null); }} style={{ background: 'transparent', color: theme.textMuted, border: 'none', cursor: 'pointer' }}>← Back</button>
         </div>
       ) : (
         <div style={cardStyle}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-            <span style={{ fontSize: '12px', color: '#FF6B35', fontWeight: 'bold' }}>QUESTION {quizStep + 1} OF {beginnerQuestions.length}</span>
-            <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>Potential Mapping</span>
+            <span style={{ fontSize: '12px', color: theme.accent, fontWeight: 'bold' }}>QUESTION {quizStep + 1} OF {beginnerQuestions.length}</span>
+            <span style={{ fontSize: '12px', color: theme.textMuted }}>Potential Mapping</span>
           </div>
-          <h2 style={{ fontSize: '22px', marginBottom: '24px', textAlign: 'left' }}>{beginnerQuestions[quizStep].question}</h2>
+          <h2 style={{ fontSize: '22px', marginBottom: '24px', textAlign: 'left', color: theme.textPrimary }}>{beginnerQuestions[quizStep].question}</h2>
 
           {showOtherInput ? (
             <div style={{ animation: 'fadeSlideIn 0.3s ease both' }}>
@@ -336,17 +338,17 @@ export default function ResumeAnalysis({ onComplete, onBack }) {
                 value={otherText}
                 onChange={(e) => setOtherText(e.target.value)}
                 autoFocus
-                style={{ width: '100%', padding: '16px', borderRadius: '12px', border: '1px solid #FF6B35', background: 'rgba(0,0,0,0.2)', color: 'white', fontSize: '16px', marginBottom: '16px', outline: 'none' }}
+                style={{ width: '100%', padding: '16px', borderRadius: '12px', border: `1px solid ${theme.accent}`, background: theme.inputBg, color: theme.textPrimary, fontSize: '16px', marginBottom: '16px', outline: 'none' }}
               />
               <button 
                 onClick={submitOther}
-                style={{ ...buttonStyle, background: '#FF6B35', color: 'white' }}
+                style={{ ...buttonStyle, background: theme.accent, color: '#FFFFFF' }}
               >
                 Confirm Interest →
               </button>
               <button 
                 onClick={() => setShowOtherInput(false)}
-                style={{ background: 'transparent', color: 'rgba(255,255,255,0.4)', border: 'none', cursor: 'pointer', fontSize: '13px' }}
+                style={{ background: 'transparent', color: theme.textMuted, border: 'none', cursor: 'pointer', fontSize: '13px' }}
               >
                 ← Choose from list
               </button>
@@ -356,7 +358,7 @@ export default function ResumeAnalysis({ onComplete, onBack }) {
               <button 
                 key={i} 
                 onClick={() => handleBeginnerChoice(opt.value)}
-                style={{ ...buttonStyle, background: 'rgba(255,255,255,0.06)', color: 'white', textAlign: 'left', border: '1px solid rgba(255,255,255,0.1)', fontSize: '14px', padding: '20px' }}
+                style={{ ...buttonStyle, background: theme.inputBg, color: theme.textPrimary, textAlign: 'left', border: `1px solid ${theme.border}`, fontSize: '14px', padding: '20px' }}
               >
                 {opt.label}
               </button>
@@ -364,7 +366,7 @@ export default function ResumeAnalysis({ onComplete, onBack }) {
           )}
           
           {!showOtherInput && (
-            <button onClick={() => setMode(null)} style={{ background: 'transparent', color: 'rgba(255,255,255,0.5)', border: 'none', cursor: 'pointer', marginTop: '10px' }}>← Cancel</button>
+            <button onClick={() => setMode(null)} style={{ background: 'transparent', color: theme.textMuted, border: 'none', cursor: 'pointer', marginTop: '10px' }}>← Cancel</button>
           )}
         </div>
       )}
