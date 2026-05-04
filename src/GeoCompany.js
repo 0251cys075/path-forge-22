@@ -373,7 +373,7 @@ export default function GeoCompany({ userData, onBack, onNext, onProgressUpdate 
                     <button type="button" onClick={() => handleUnapply(c.name)} style={{ padding:'6px 10px', borderRadius:'14px', cursor:'pointer', fontSize:'10px', background:'rgba(231,76,60,0.15)', color:'#E74C3C', border:'1px solid rgba(231,76,60,0.45)', fontWeight:'bold' }} title="Cancel this application">Unapply</button>
                   </>
                 ) : (
-                  <button type="button" onClick={() => handleApply(c)} style={{ padding:'6px 20px', borderRadius:'14px', cursor:'pointer', fontSize:'11px', background:'#FF6B35', color:'white', border:'none', fontWeight:'bold' }}>Apply</button>
+                  <button type="button" onClick={() => handleApply(c.name)} style={{ padding:'6px 20px', borderRadius:'14px', cursor:'pointer', fontSize:'11px', background:'#FF6B35', color:'white', border:'none', fontWeight:'bold' }}>Apply</button>
                 )}
               </div>
             </div>

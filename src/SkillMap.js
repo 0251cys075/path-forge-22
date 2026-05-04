@@ -185,7 +185,6 @@ export default function SkillMap({ userData, onBack, onNext }) {
     const hasOnboarding = userData?.onboardingCompleted;
     const hasSkill = userData?.skill?.title;
     const hasExperience = userData?.experience?.id;
-    const hasLearningProgress = userData?.learningProgress?.modules;
     const completedModules = Object.values(userData?.learningProgress?.modules || {}).filter(m => m.completed).length;
     const totalModules = userData?.learningProgress?.total || 0;
     

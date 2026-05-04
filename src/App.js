@@ -16,6 +16,7 @@ import CommunityFeed from './CommunityFeed';
 import RewardHub from './RewardHub';
 import IndustryDashboard from './IndustryDashboard';
 import Certifications from './Certifications';
+import AIResumeBuilder from './AIResumeBuilder';
 import AIInterview from './AIInterview';
 import CustomCursor from './components/CustomCursor';
 import ParticleBackground from './components/ParticleBackground';
@@ -27,7 +28,7 @@ const getProfileStorageKey = (uid) => `pathforge_user_profile_${uid}`;
 
 const VALID_APP_PAGES = new Set([
   'home', 'dashboard', 'onboarding', 'quiz', 'geo', 'skillmap', 'score', 'learning',
-  'mentoring', 'resume', 'community', 'profile', 'rewards', 'interview', 'industry', 'audit', 'certifications',
+  'mentoring', 'resume', 'community', 'profile', 'rewards', 'interview', 'industry', 'audit', 'certifications', 'resume-builder',
 ]);
 
 function App() {
@@ -188,6 +189,7 @@ function App() {
   if (page === 'interview') return <SubPageWrapper><AIInterview userData={userData} onBack={goBack} /></SubPageWrapper>;
   if (page === 'industry') return <SubPageWrapper><IndustryDashboard onBack={goBack} /></SubPageWrapper>;
   if (page === 'certifications') return <SubPageWrapper><Certifications userData={userData} onBack={goBack} onProgressUpdate={handleProgressUpdate} /></SubPageWrapper>;
+  if (page === 'resume-builder') return <SubPageWrapper><AIResumeBuilder userData={userData} onBack={goBack} onProgressUpdate={handleProgressUpdate} /></SubPageWrapper>;
   if (page === 'audit') {
     return (
       <SubPageWrapper>
@@ -259,7 +261,8 @@ function App() {
               { id: 'interview', label: 'Mock Interview', icon: '🎥' },
               { id: 'audit', label: 'Project Audit', icon: '🛡️' },
               { id: 'geo', label: 'Company Search', icon: '📍' },
-              { id: 'mentoring', label: 'Mentorship', icon: '🎯' },
+              { id: 'resume', label: 'ATS Resume', icon: '📄' },
+              { id: 'resume-builder', label: 'AI Resume Builder', icon: '🤖' },
               { id: 'community', label: 'Community', icon: '🌐' },
               { id: 'skillmap', label: 'Skill DNA', icon: '🧬' },
               { id: 'certifications', label: 'Certifications', icon: '🎓' },
@@ -824,6 +827,31 @@ function ProfilePage({ user, userData, onBack, persistUserData, handleLogout }) 
   const fileInputRef = useRef(null);
   const coverInputRef = useRef(null);
   const [editMode, setEditMode] = useState(false);
+  const [theme, setTheme] = useState('dark');
+  const [primaryColor, setPrimaryColor] = useState('#FF6B35');
+  const [fontSize, setFontSize] = useState('medium');
+  const [animationsEnabled, setAnimationsEnabled] = useState(true);
+
+  const updateTheme = (newTheme) => {
+    setTheme(newTheme);
+    localStorage.setItem('pathforge_theme', newTheme);
+  };
+
+  const updatePrimaryColor = (color) => {
+    setPrimaryColor(color);
+    localStorage.setItem('pathforge_primary_color', color);
+  };
+
+  const updateFontSize = (size) => {
+    setFontSize(size);
+    localStorage.setItem('pathforge_font_size', size);
+  };
+
+  const toggleAnimations = () => {
+    const newValue = !animationsEnabled;
+    setAnimationsEnabled(newValue);
+    localStorage.setItem('pathforge_animations_enabled', newValue.toString());
+  };
   const [form, setForm] = useState({
     name: userData?.name || displayName,
     college: userData?.college || '',
@@ -1043,9 +1071,101 @@ function ProfilePage({ user, userData, onBack, persistUserData, handleLogout }) 
           )}
         </div>
 
+        {/* Theme Settings */}
+        <div style={{ marginTop: '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '24px' }}>
+          <h3 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '20px' }}>🎨 Theme Settings</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            
+            {/* Theme Toggle */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px' }}>
+              <div>
+                <div style={{ fontSize: '14px', fontWeight: 'bold' }}>🌙 Dark Mode</div>
+                <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', marginTop: '2px' }}>Switch between light and dark themes</div>
+              </div>
+              <button
+                onClick={() => updateTheme(theme === 'dark' ? 'light' : 'dark')}
+                style={{
+                  width: '48px', height: '26px', borderRadius: '13px', border: 'none', cursor: 'pointer', position: 'relative', transition: 'background 0.3s',
+                  background: theme === 'dark' ? '#FF6B35' : 'rgba(255,255,255,0.15)',
+                }}
+              >
+                <div style={{
+                  width: '20px', height: '20px', borderRadius: '50%', background: 'white', position: 'absolute', top: '3px', transition: 'left 0.3s',
+                  left: theme === 'dark' ? '24px' : '4px',
+                }} />
+              </button>
+            </div>
+
+            {/* Primary Color */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px' }}>
+              <div>
+                <div style={{ fontSize: '14px', fontWeight: 'bold' }}>🎨 Primary Color</div>
+                <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', marginTop: '2px' }}>Customize app accent color</div>
+              </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {['#FF6B35', '#3498DB', '#2ECC71', '#9B59B6', '#E74C3C', '#F39C12'].map(color => (
+                  <button
+                    key={color}
+                    onClick={() => updatePrimaryColor(color)}
+                    style={{
+                      width: '24px', height: '24px', borderRadius: '50%', border: primaryColor === color ? '2px solid white' : '2px solid transparent',
+                      background: color, cursor: 'pointer', transition: 'all 0.2s'
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Font Size */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px' }}>
+              <div>
+                <div style={{ fontSize: '14px', fontWeight: 'bold' }}>📝 Font Size</div>
+                <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', marginTop: '2px' }}>Adjust text size for better readability</div>
+              </div>
+              <select
+                value={fontSize}
+                onChange={(e) => updateFontSize(e.target.value)}
+                style={{
+                  background: 'rgba(255,255,255,0.1)',
+                  color: 'white',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  padding: '6px 12px',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  cursor: 'pointer'
+                }}
+              >
+                <option value="small" style={{ background: '#2c3e50' }}>Small</option>
+                <option value="medium" style={{ background: '#2c3e50' }}>Medium</option>
+                <option value="large" style={{ background: '#2c3e50' }}>Large</option>
+              </select>
+            </div>
+
+            {/* Animations Toggle */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px' }}>
+              <div>
+                <div style={{ fontSize: '14px', fontWeight: 'bold' }}>✨ Animations</div>
+                <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', marginTop: '2px' }}>Enable/disable UI animations</div>
+              </div>
+              <button
+                onClick={toggleAnimations}
+                style={{
+                  width: '48px', height: '26px', borderRadius: '13px', border: 'none', cursor: 'pointer', position: 'relative', transition: 'background 0.3s',
+                  background: animationsEnabled ? '#2ECC71' : 'rgba(255,255,255,0.15)',
+                }}
+              >
+                <div style={{
+                  width: '20px', height: '20px', borderRadius: '50%', background: 'white', position: 'absolute', top: '3px', transition: 'left 0.3s',
+                  left: animationsEnabled ? '24px' : '4px',
+                }} />
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* Settings / Actions */}
         <div style={{ marginTop: '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '24px' }}>
-          <h3 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '20px' }}>⚙️ Settings</h3>
+          <h3 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '20px' }}>⚙️ General Settings</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
 
             {/* Toggle: Email Notifications */}

@@ -263,7 +263,6 @@ export default function Certifications({ userData, onBack, onProgressUpdate }) {
   const [enrolledCourses, setEnrolledCourses] = useState([]);
   const [completedVideos, setCompletedVideos] = useState({});
 
-  const skillName = userData?.skill?.title || 'Frontend Development';
   const availableCategories = Object.keys(CERTIFICATIONS_DATA);
 
   useEffect(() => {
@@ -351,6 +350,7 @@ export default function Certifications({ userData, onBack, onProgressUpdate }) {
                 <div style={{ position: 'relative', paddingBottom: '56.25%' }}>
                   <iframe
                     src={currentVideo.url}
+                    title={currentVideo.title}
                     style={{
                       position: 'absolute',
                       top: 0,

@@ -36,6 +36,13 @@ export default function AIInterview({ userData, onBack, onComplete }) {
   const [securityViolation, setSecurityViolation] = useState(null);
   const [boundingBox, setBoundingBox] = useState(null);
   
+  // Enhanced Detection States
+  const [warnings, setWarnings] = useState([]);
+  const [eyeContactScore, setEyeContactScore] = useState(100);
+  const [personDetected, setPersonDetected] = useState(false);
+  const [sessionTerminated, setSessionTerminated] = useState(false);
+  const [lastWarningTime, setLastWarningTime] = useState(0);
+  
   const videoRef = useRef(null);
   const canvasRef = useRef(document.createElement('canvas'));
   const mediaRecorderRef = useRef(null);
@@ -47,6 +54,40 @@ export default function AIInterview({ userData, onBack, onComplete }) {
 
   const targetField = selectedField === 'Other' ? customField : selectedField;
   const isFieldValid = targetField.length > 2 && /^[a-zA-Z\s]+$/.test(targetField);
+
+  // Warning System Functions
+  const addWarning = (type, message) => {
+    const now = Date.now();
+    if (now - lastWarningTime < 2000) return; // Prevent spam warnings
+    
+    const newWarning = {
+      id: Date.now(),
+      type,
+      message,
+      timestamp: now
+    };
+    
+    setWarnings(prev => [...prev, newWarning]);
+    setLastWarningTime(now);
+    
+    // Auto-remove warning after 5 seconds
+    setTimeout(() => {
+      setWarnings(prev => prev.filter(w => w.id !== newWarning.id));
+    }, 5000);
+    
+    // Terminate session after 5 warnings
+    if (warnings.length >= 4) {
+      terminateSession('Maximum warnings reached. Session terminated for security reasons.');
+    }
+  };
+
+  const terminateSession = (reason) => {
+    setSessionTerminated(true);
+    stopRecording();
+    stopStream();
+    setSecurityViolation(reason);
+    setRecorded(false);
+  };
 
   // TAB & WINDOW FOCUS LOCK
   useEffect(() => {
@@ -126,66 +167,131 @@ export default function AIInterview({ userData, onBack, onComplete }) {
     // eslint-disable-next-line
   }, [setupPhase]);
 
-  // SKIN-SENTINEL ENTITY SCANNER WITH BOUNDING BOX
+  // ENHANCED PERSON DETECTION WITH FACE AND EYE CONTACT TRACKING
   useEffect(() => {
-    if (setupPhase || !videoRef.current || results) return;
+    if (setupPhase || !videoRef.current || results || sessionTerminated) return;
 
     const ctx = canvasRef.current.getContext('2d', { willReadFrequently: true });
+    let consecutiveNoPersonFrames = 0;
+    let consecutiveLowEyeContactFrames = 0;
+    
     const interval = setInterval(() => {
       if (!videoRef.current) return;
 
-      canvasRef.current.width = 160;
-      canvasRef.current.height = 120;
-      ctx.drawImage(videoRef.current, 0, 0, 160, 120);
-      const frame = ctx.getImageData(0, 0, 160, 120).data;
+      canvasRef.current.width = 320;
+      canvasRef.current.height = 240;
+      ctx.drawImage(videoRef.current, 0, 0, 320, 240);
+      const frame = ctx.getImageData(0, 0, 320, 240).data;
       
-      let curL = 0, curR = 0;
-      let minX = 160, maxX = 0, minY = 120, maxY = 0;
-      let skinDetected = false;
+      // Enhanced face detection
+      let facePixels = 0;
+      let minX = 320, maxX = 0, minY = 240, maxY = 0;
 
       for (let i = 0; i < frame.length; i += 4) { 
         const r = frame[i];
         const g = frame[i+1];
         const b = frame[i+2];
-        const x = (i/4) % 160;
-        const y = Math.floor((i/4) / 160);
+        const x = (i/4) % 320;
+        const y = Math.floor((i/4) / 320);
         
-        const isSkin = (r > 105 && g > 55 && b > 35 && r > g && r > b && (r - g) > 22);
+        // Enhanced skin detection for face
+        const isSkin = (r > 95 && g > 40 && b > 20 && 
+                       r > g && r > b && 
+                       Math.abs(r - g) > 15 && 
+                       r - b > 15);
 
         if (isSkin) {
-           skinDetected = true;
-           if (x < minX) minX = x;
-           if (x > maxX) maxX = x;
-           if (y < minY) minY = y;
-           if (y > maxY) maxY = y;
-
-           if (x < 55) curL++;
-           else if (x > 105) curR++;
+          facePixels++;
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
         }
       }
 
-      if (skinDetected) {
-        setBoundingBox({ x: (minX/160)*100, y: (minY/120)*100, w: ((maxX-minX)/160)*100, h: ((maxY-minY)/120)*100 });
+      // Person Detection Logic
+      const minFacePixels = 500; // Minimum pixels for a face
+      const faceDetected = facePixels > minFacePixels;
+      
+      if (faceDetected) {
+        consecutiveNoPersonFrames = 0;
+        setPersonDetected(true);
+        
+        // Update bounding box
+        setBoundingBox({ 
+          x: (minX/320)*100, 
+          y: (minY/240)*100, 
+          w: ((maxX-minX)/320)*100, 
+          h: ((maxY-minY)/240)*100 
+        });
+
+        // Eye Contact Detection
+        const faceCenterX = (minX + maxX) / 2;
+        const frameCenterX = 320 / 2;
+        const eyeContactThreshold = 40; // pixels
+        
+        const isLookingAtCamera = Math.abs(faceCenterX - frameCenterX) < eyeContactThreshold;
+        
+        if (isLookingAtCamera) {
+          consecutiveLowEyeContactFrames = 0;
+          setEyeContactScore(prev => Math.min(100, prev + 2));
+        } else {
+          consecutiveLowEyeContactFrames++;
+          setEyeContactScore(prev => Math.max(0, prev - 1));
+          
+          // Add warning for poor eye contact
+          if (consecutiveLowEyeContactFrames > 30 && recording) { // ~4.5 seconds
+            addWarning('eye_contact', '⚠️ Please maintain eye contact with the camera');
+            consecutiveLowEyeContactFrames = 0;
+          }
+        }
       } else {
+        consecutiveNoPersonFrames++;
+        setPersonDetected(false);
         setBoundingBox(null);
+        
+        // Add warning for no person detected
+        if (consecutiveNoPersonFrames > 20 && recording) { // ~3 seconds
+          addWarning('no_person', '⚠️ No person detected in camera view');
+          consecutiveNoPersonFrames = 0;
+        }
+      }
+
+      // Multiple person detection (enhanced)
+      let curL = 0, curR = 0;
+      for (let i = 0; i < frame.length; i += 4) {
+        const x = (i/4) % 320;
+        const r = frame[i];
+        const g = frame[i+1];
+        const b = frame[i+2];
+        
+        const isSkin = (r > 95 && g > 40 && b > 20 && r > g && r > b);
+        
+        if (isSkin) {
+          if (x < 100) curL++;
+          else if (x > 220) curR++;
+        }
       }
 
       const lDelta = Math.abs(curL - prevMassesRef.current.l);
       const rDelta = Math.abs(curR - prevMassesRef.current.r);
-      const isSecondPerson = (curL > 1500) || (curR > 1500) || (lDelta > 1200) || (rDelta > 1200);
+      const isMultiplePeople = (curL > 2000) || (curR > 2000) || (lDelta > 1500) || (rDelta > 1500);
 
-      if (isSecondPerson) {
+      if (isMultiplePeople) {
         setPersonCount(2);
-        if (recording) handleViolation("👥 SECURITY TERMINATION: Unauthorized person detected.");
+        if (recording) {
+          addWarning('multiple_people', '👥 Multiple people detected. Please ensure you are alone.');
+        }
       } else {
         setPersonCount(1);
       }
+      
       prevMassesRef.current = { l: curL, r: curR };
     }, 150); 
 
     return () => clearInterval(interval);
     // eslint-disable-next-line
-  }, [setupPhase, recording, results]);
+  }, [setupPhase, recording, results, sessionTerminated]);
 
   // Countdown Timer
   useEffect(() => {
@@ -405,13 +511,91 @@ export default function AIInterview({ userData, onBack, onComplete }) {
             )}
 
             {!results && (
-              <div style={{ position:'absolute', top:20, left:20, display:'flex', gap:'10px' }}>
-                <div style={{ background:'rgba(0,0,0,0.6)', padding:'6px 12px', borderRadius:'10px', fontSize:'11px', border:'1px solid rgba(255,255,255,0.2)', backdropFilter:'blur(5px)' }}>
-                  👤 {personCount} PERSON DETECTED
+              <div style={{ position:'absolute', top:20, left:20, display:'flex', flexDirection:'column', gap:'8px' }}>
+                <div style={{ display:'flex', gap:'8px', flexWrap:'wrap' }}>
+                  <div style={{ 
+                    background: personDetected ? 'rgba(46,204,113,0.6)' : 'rgba(231,76,60,0.6)', 
+                    padding:'6px 12px', 
+                    borderRadius:'10px', 
+                    fontSize:'11px', 
+                    border:'1px solid rgba(255,255,255,0.2)', 
+                    backdropFilter:'blur(5px)',
+                    fontWeight: 'bold'
+                  }}>
+                    👤 {personDetected ? 'PERSON DETECTED' : 'NO PERSON'}
+                  </div>
+                  <div style={{ 
+                    background: eyeContactScore > 70 ? 'rgba(46,204,113,0.6)' : eyeContactScore > 40 ? 'rgba(243,156,18,0.6)' : 'rgba(231,76,60,0.6)', 
+                    padding:'6px 12px', 
+                    borderRadius:'10px', 
+                    fontSize:'11px', 
+                    border:'1px solid rgba(255,255,255,0.2)', 
+                    backdropFilter:'blur(5px)',
+                    fontWeight: 'bold'
+                  }}>
+                    �️ EYE: {eyeContactScore}%
+                  </div>
+                  <div style={{ 
+                    background: noiseLevel > 65 ? 'rgba(231,76,60,0.6)' : 'rgba(46,204,113,0.6)', 
+                    padding:'6px 12px', 
+                    borderRadius:'10px', 
+                    fontSize:'11px', 
+                    border:'1px solid rgba(255,255,255,0.2)', 
+                    backdropFilter:'blur(5px)',
+                    fontWeight: 'bold'
+                  }}>
+                    🔊 NOISE: {noiseLevel > 65 ? 'LOUD' : 'OPTIMAL'}
+                  </div>
                 </div>
-                <div style={{ background:'rgba(0,0,0,0.6)', padding:'6px 12px', borderRadius:'10px', fontSize:'11px', border:'1px solid rgba(255,255,255,0.2)', backdropFilter:'blur(5px)' }}>
-                  🔊 NOISE: <span style={{ color: noiseLevel > 65 ? '#E74C3C' : '#2ECC71' }}>{noiseLevel > 65 ? 'LOUD' : 'OPTIMAL'}</span>
-                </div>
+                
+                {/* Warning Counter */}
+                {warnings.length > 0 && (
+                  <div style={{ 
+                    background: 'rgba(231,76,60,0.8)', 
+                    padding:'6px 12px', 
+                    borderRadius:'10px', 
+                    fontSize:'11px', 
+                    border:'1px solid #E74C3C', 
+                    backdropFilter:'blur(5px)',
+                    fontWeight: 'bold',
+                    animation: 'pulse 2s infinite'
+                  }}>
+                    ⚠️ WARNINGS: {warnings.length}/5
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Warnings Display */}
+            {warnings.length > 0 && (
+              <div style={{ 
+                position: 'absolute', 
+                top: 20, 
+                right: 20, 
+                maxWidth: '300px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px'
+              }}>
+                {warnings.map(warning => (
+                  <div
+                    key={warning.id}
+                    style={{
+                      background: 'rgba(231,76,60,0.9)',
+                      border: '1px solid #E74C3C',
+                      borderRadius: '12px',
+                      padding: '12px',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      color: 'white',
+                      backdropFilter: 'blur(10px)',
+                      animation: 'slideInRight 0.3s ease-out',
+                      boxShadow: '0 4px 15px rgba(231,76,60,0.3)'
+                    }}
+                  >
+                    {warning.message}
+                  </div>
+                ))}
               </div>
             )}
           </div>
