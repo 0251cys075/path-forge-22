@@ -5,7 +5,7 @@
 PathForge is a career guidance web app that helps students find the right path based on their skills, goals, and experience level. It generates a personalized ATS-friendly resume and provides roadmaps to help you grow in your chosen tech field.
 
 ## 🌐 Live Demo
-https://pathforge-rust.vercel.app/
+https://path-forge-sigma.vercel.app/
 
 ## ✨ Features
 - 🎯 Personalized career path recommendations
