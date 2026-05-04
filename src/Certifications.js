@@ -317,7 +317,6 @@ export default function Certifications({ userData, onBack, onProgressUpdate, the
 
   if (currentVideo) {
     return (
-    return (
       <div style={{
         minHeight: '100vh',
         background: theme.pageBg,

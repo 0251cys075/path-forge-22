@@ -165,12 +165,7 @@ function getStatus(node, expId, isSkilled) {
   return 'gap';
 }
 
-const statusConfig = {
-  you:      { color: currentTheme.accent, radius: 28 },
-  known:    { color: currentTheme.success, radius: 20 },
-  learning: { color: currentTheme.warning, radius: 20 },
-  gap:      { color: currentTheme.error, radius: 20 },
-};
+
 
 export default function SkillMap({ userData, onBack, onNext, theme }) {
   const defaultTheme = {
@@ -188,6 +183,14 @@ export default function SkillMap({ userData, onBack, onNext, theme }) {
     error: '#CC1016',
   };
   const currentTheme = theme || defaultTheme;
+  
+  const statusConfig = {
+    you:      { color: currentTheme.accent, radius: 28 },
+    known:    { color: currentTheme.success, radius: 20 },
+    learning: { color: currentTheme.warning, radius: 20 },
+    gap:      { color: currentTheme.error, radius: 20 },
+  };
+
   const svgRef = useRef(null);
   const skillName = userData?.skill?.title || 'default';
   const expId     = userData?.experience?.id || 'beginner';
